@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+Bayes_Project/*
+EE509_Project/*
+*.Rproj
+*.csv
+*.rds
+*.Rapp.history
