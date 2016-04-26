@@ -4,7 +4,7 @@ library("rjags")
 library(coda)
 library(mvtnorm)
 setwd(paste0(getwd(),"/EE509_Project/"))
-glopnet <- read.csv("glopnet.csv")
+glopnet <- read.csv("glopnet_full.csv")
 glopnet[c("X")] <- NULL
 glopnet[c("X.1")] <- NULL
 glopnet[c("X.2")] <- NULL

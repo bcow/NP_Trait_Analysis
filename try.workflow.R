@@ -3,17 +3,29 @@
 
 #######################################################################################
 ## Set up data
-library("rjags")
+library(rjags)
 library(coda)
 library(mvtnorm)
 library(data.table)
 
-setwd(getwd())
+# load data in as data.table
 try_full <- data.table(readRDS("try.data.rds"))
 
+sum(is.nan(try_full$LMA)) +sum(is.na(try_full))
+
+# Some na's in the table accidentally got changed to NaN, switch back so it doesn't confuse the model
+nan2na <- function(x){
+  x[is.nan(x)] <- NA
+  return(x)
+}
+
+try_full <- try_full[,lapply(.SD, nan2na)]
+
+# data without pfts
 try.na <- try_full[,.(log.LL, log.LMA, log.Nmass, log.Pmass, log.Rdmass)]
 try <- na.omit(try.na)
 
+# data with pfts
 try.pft.na <- try_full[,.(log.LL, log.LMA, log.Nmass, log.Pmass, log.Rdmass, pft)]
 try.pft <- na.omit(try.na)
 
@@ -56,6 +68,8 @@ if(runs$uni){
   model = "univarite.model.txt"
   
   # Without na's
+  remove(j.data, j.model, j.out)
+  
   j.data <- try
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n)
@@ -67,6 +81,8 @@ if(runs$uni){
   
   
   # With na's
+  remove(j.data, j.model, j.out)
+  
   j.data <- try.na[1:1000]
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n)
@@ -85,22 +101,26 @@ if(runs$uni){
   model = "multivarite.model.txt"
   
   # Without na's
+  remove(j.data, j.model, j.out)
+  
   j.data <- try
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
   init = NULL
-  j.model   <- jags.model (file = textConnection(MultModel),data = data,inits = init,n.chains = 3)
+  j.model   <- jags.model (file = model ,data = data,inits = init,n.chains = 3)
   update(j.model, n.iter=1000)
   j.out   <- coda.samples (model = j.model,variable.names= c("mu"),n.iter = 10000)
   out.multi.try <- j.out
   
   
   # With na's
-  j.data <- try.na[1:1000]
+  remove(j.data, j.model, j.out)
+  
+  j.data <- try.na[1:100]
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
   init = NULL
-  j.model   <- jags.model (file = textConnection(MultModel),data = data,inits = init,n.chains = 3)
+  j.model   <- jags.model (file = model ,data = data,inits = init,n.chains = 3)
   update(j.model, n.iter=1000)
   j.out   <- coda.samples(model = j.model,variable.names= c("mu"),n.iter = 10000)
   out.multi.try.na <- j.out
