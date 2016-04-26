@@ -1,9 +1,9 @@
 #######################################################################################
 ## Set up data
-library("rjags")
+library(rjags)
 library(coda)
 library(mvtnorm)
-setwd(paste0(getwd(),"/EE509_Project/"))
+
 glopnet <- read.csv("glopnet_full.csv")
 glopnet[c("X")] <- NULL
 glopnet[c("X.1")] <- NULL
@@ -69,6 +69,8 @@ if(run){
   
   
   # Without na's
+  remove(j.data, j.model, j.out)
+  
   j.data <- gdata
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n)
@@ -80,6 +82,7 @@ if(run){
   
   
   # With na's
+  remove(j.data, j.model, j.out)
   j.data <- gdata.na
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n)
@@ -111,6 +114,7 @@ if(run){
   }"
 
   # Without na's 
+  remove(j.data, j.model, j.out)
   j.data <- gdata
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
