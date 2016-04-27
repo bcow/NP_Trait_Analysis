@@ -1,6 +1,4 @@
 # Basic Univariate on TRY data
-
-
 #######################################################################################
 ## Set up data
 library(rjags)
@@ -56,9 +54,16 @@ if(pairs){
 
 runs = list(
   uni = TRUE,
-  uni.pft = TRUE,
+  uni.na = TRUE,
   multi = TRUE,
-  multi.pft = TRUE)
+  multi.na = TRUE,
+  multi.pft = TRUE,
+  multi.pft.na = TRUE)
+
+if(file.exists("try.uni.mult.outputs.Rdata")){
+  load("try.uni.mult.outputs.Rdata")
+  runs[c("uni","uni.na","multi","multi.na")] <- FALSE
+}
 
 #######################################################################################
 ## Univariate Run
@@ -83,7 +88,7 @@ if(runs$uni){
   # With na's
   remove(j.data, j.model, j.out)
   
-  j.data <- try.na[1:1000]
+  j.data <- try.na
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n)
   init = NULL
@@ -116,12 +121,47 @@ if(runs$uni){
   # With na's
   remove(j.data, j.model, j.out)
   
-  j.data <- try.na[1:100]
+  j.data <- try.na
   N=dim(j.data)[1]; n=dim(j.data)[2]
-  data = list(Y=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
+  data = list(X=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
   init = NULL
-  j.model   <- jags.model (file = model ,data = data,inits = init,n.chains = 3)
+  j.model   <- jags.model (file = model, data = data, inits = init, n.chains = 3)
   update(j.model, n.iter=1000)
-  j.out   <- coda.samples(model = j.model,variable.names= c("mu"),n.iter = 10000)
+  j.out   <- coda.samples (model = j.model, variable.names= c("mu"), n.iter = 10000)
   out.multi.try.na <- j.out
 }
+
+
+#######################################################################################
+## Save Data
+
+# Univariate outputs
+out1.df <- as.data.frame(as.matrix(out.uni.try)) #Univ
+out3.df <- as.data.frame(as.matrix(out.multi.try)) #Univ & NA's
+out2.df <- as.data.frame(as.matrix(out.uni.try.na)) #Multi
+out4.df <- as.data.frame(as.matrix(out.multi.try.na)) #Multi & NA's
+
+colnames(out1.df)<-colnames(out3.df)<-colnames(out2.df)<-colnames(out4.df)<-colnames(try)
+
+
+outs <- list(out1.df,out2.df,out3.df,out4.df)
+
+r <-  length(outs)
+c <-  dim(try)[2]
+mus <- as.data.frame(matrix(NA,r,c))
+mus[1,] <- colMeans(try)
+for(i in 1:r){
+  for(j in 1:c){
+    mus[i+1,j] <- mean(outs[[i]][,j])
+  }
+}
+rownames(mus) <- c("Data ","Univariate   without NA's ", "Multivariate without NA's ", "Univariate   with NA's",  "Multivariate with NA's" )
+colnames(mus) <- colnames(try) 
+options(digits=4)
+print(mus)
+
+if(run){
+  save(out1,out2,out3,out4, outs, mus, file="try.uni.mult.outputs.Rdata")
+}
+
+
