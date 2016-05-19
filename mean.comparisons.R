@@ -1,4 +1,4 @@
-load("try.uni.mult.outputs.Rdata")
+load("try.outs.Rdata")
 
 #######################################################################################
 ## Overall comparison of computed and estimated means for each of the 6 variables 

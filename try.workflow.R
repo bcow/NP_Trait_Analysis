@@ -102,6 +102,13 @@ update(j.model, n.iter=1000)
 j.out   <- coda.samples (model = j.model,variable.names= c("mu"), n.iter = 10000)
 out.uni.try.na <- j.out
 
+#######################################################################################
+## Save Data
+
+save(out.uni.try,
+     out.uni.try.na,
+     file= paste0("output/try.uni.outputs.",args[1],".Rdata"))
+
 
 #######################################################################################
 ## Multivariate Run
@@ -141,9 +148,48 @@ out.multi.try.na <- j.out
 #######################################################################################
 ## Save Data
 
-save(out.uni.try,
-     out.uni.try.na,
-     out.multi.try,
+save(out.multi.try,
      out.multi.try.na,
-     file= paste0("try.uni.mult.outputs",args[1],".Rdata"))
+     file= paste0("output/try.multi.outputs.",args[1],".Rdata"))
+
+#######################################################################################
+## PFT Run without na's
+
+model = "models/multivariate.grp.model.txt"
+
+j.data <- try.pft.na
+Nvars <- dim(j.data)[2]
+Nobs = dim(j.data)[1]
+Nvars = dim(j.data)[2] 
+GroupNo = as.numeric(as.factor(try_full$pft[!is.na(try_full$pft)]))
+Ngroup = length(unique(GroupNo))
+Gamma = diag(Nvars)
+Omega = diag(Nvars)
+
+n.chains = 1
+
+data = list(
+  X=j.data,
+  Nobs = Nobs,
+  Nvars = Nvars, 
+  GroupNo = GroupNo,
+  Ngroup = Ngroup,
+  Gamma = Gamma,
+  Omega = Omega
+)
+init = NULL
+j.model   <- jags.model (file = model, data = data, inits = init, n.chains = n.chains)
+update(j.model, n.iter=1000)
+j.out   <- coda.samples (model = j.model, variable.names= c("Sigma","theta","mu"), n.iter = 10000)
+out.pft.try.na <- j.out
+
+#######################################################################################
+## Save Data
+
+save(out.pft.try.na, file= paste0("output/try.pft.outputs.",args[1],".Rdata"))
+
+#######################################################################################
+
+# Next run process.mcmc.R
+
 

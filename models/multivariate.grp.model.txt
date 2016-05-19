@@ -1,0 +1,14 @@
+model{
+  for(n in 1:Nobs){
+    Y[n,1:Nvars]~dmnorm(theta[GroupNo[n],],Sigma[GroupNo[n],,])
+    for(p in 1:Nvars){
+      X[n,p]~dnorm(Y[n,p],10000000)
+    }
+  }
+  for(j in 1:Ngroup){
+    theta[j,1:Nvars]~dmnorm(mu[],tau[,])
+    Sigma[j,1:Nvars,1:Nvars]~dwish(Gamma[,],Nvars)
+  }
+  for(m in 1:Nvars){mu[m]~dnorm(0,0.001)}
+  tau[1:Nvars,1:Nvars]~dwish(Omega[,],Nvars)
+}
