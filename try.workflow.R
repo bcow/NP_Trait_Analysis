@@ -104,7 +104,7 @@ out.uni.try.na <- j.out
 
 
 #######################################################################################
-## Univariate Run
+## Multivariate Run
 
 model = "multivarite.model.txt"
 
@@ -130,7 +130,7 @@ print(Sys.time())
 
 j.data <- try.na
 N=dim(j.data)[1]; n=dim(j.data)[2]
-data = list(Y=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
+data = list(X=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
 init = list(mu = colMeans(j.data), prec.Sigma = solve(cov(j.data)))
 j.model   <- jags.model (file = model, data = data, inits = init, n.chains = 1)
 update(j.model, n.iter=1000)
