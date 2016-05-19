@@ -1,65 +1,22 @@
 args = commandArgs(trailingOnly=TRUE)
 
-# Basic Univariate on TRY data
 #######################################################################################
-## Set up data
+## Set up packages & data 
 library(rjags)
 library(coda)
 library(mvtnorm)
 library(data.table)
-
-# load data in as data.table
-try_full <- data.table(readRDS("try.data.rds"))
-
-sum(is.nan(try_full$LMA)) +sum(is.na(try_full))
-
-# Some na's in the table accidentally got changed to NaN, switch back so it doesn't confuse the model
-nan2na <- function(x){
-  x[is.nan(x)] <- NA
-  return(x)
-}
-
-try_full <- try_full[,lapply(.SD, nan2na)]
-
-# data without pfts
-try.na <- try_full[,.(log.LL, log.LMA, log.Nmass, log.Pmass, log.Rdmass)]
-try <- na.omit(try.na)
-
-# data with pfts
-try.pft.na <- try_full[,.(log.LL, log.LMA, log.Nmass, log.Pmass, log.Rdmass, pft)]
-try.pft <- na.omit(try.na)
-
-
-#######################################################################################
-## Pairs plots 
-pairs = FALSE
-
-if(pairs){
-  source("pairs_BC.R")
-  pal <- c(palette(rainbow(32))[c(1,4,7,11,17,20,24,27,30)],"grey")
-  
-  #png(filename = "pairs.png", width=600, height=600)
-  pairs(try[,.(log.LL, log.LMA, log.Nmass, log.Pmass, log.Rdmass)], panel=function(x,y){
-    points(x,y)#,col=pal[glopnet$BIOME])
-    fit <- lm(y~x)
-    p <- pf(summary(fit)$fstatistic[1],summary(fit)$fstatistic[2],summary(fit)$fstatistic[3], lower.tail = F)
-    if(p < .01){abline(fit, col='red',lwd=2)}
-    # legend("top", legend=sprintf("R2 = %.2f",summary(fit)$r.squared), text.col="blue")
-  },diag.panel=panel.hist,upper.panel=panel.r2)
-  #dev.off()
-}
-
-
+source("load.try.data.R")
 
 #######################################################################################
 ## Do JAGS runs
 
 runs = list(
-  uni = TRUE,
-  uni.na = TRUE,
-  multi = TRUE,
-  multi.na = TRUE,
-  multi.pft = TRUE,
+  uni = FALSE,
+  uni.na = FALSE,
+  multi = FALSE,
+  multi.na = FALSE,
+  multi.pft = FALSE,
   multi.pft.na = TRUE)
 
 if(file.exists("try.uni.mult.outputs.Rdata")){
@@ -70,6 +27,7 @@ if(file.exists("try.uni.mult.outputs.Rdata")){
 #######################################################################################
 ## Univariate Run
 
+if(uni){
 
 model = "univarite.model.txt"
 
@@ -109,9 +67,11 @@ save(out.uni.try,
      out.uni.try.na,
      file= paste0("output/try.uni.outputs.",args[1],".Rdata"))
 
-
+} # end if uni
 #######################################################################################
 ## Multivariate Run
+
+if(multi){
 
 model = "multivarite.model.txt"
 
@@ -151,6 +111,7 @@ out.multi.try.na <- j.out
 save(out.multi.try,
      out.multi.try.na,
      file= paste0("output/try.multi.outputs.",args[1],".Rdata"))
+}# end if uni.na
 
 #######################################################################################
 ## PFT Run without na's
