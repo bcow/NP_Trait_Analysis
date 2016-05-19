@@ -5,10 +5,15 @@
 *.Rproj
 *.rds
 *.Rapp.history
-data/*
+
+# old work
 old_Bayes_Project/*
 old_EE509_Project/*
 
+# private
+data/*
+
+# too big
 output/try.multi*
 output/try.uni*
 output/try.pft*
