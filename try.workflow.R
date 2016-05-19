@@ -137,7 +137,7 @@ print(Sys.time())
 
 j.data <- try.na
 N=dim(j.data)[1]; n=dim(j.data)[2]
-data = list(X=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
+data = list(Y=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
 init = list(mu = colMeans(j.data), prec.Sigma = solve(cov(j.data)))
 j.model   <- jags.model (file = model, data = data, inits = init, n.chains = 1)
 update(j.model, n.iter=1000)
@@ -167,6 +167,10 @@ Gamma = diag(Nvars)
 Omega = diag(Nvars)
 
 n.chains = 1
+n.iter <- 10000
+n.update <- 20
+burnin <- 1000
+
 
 data = list(
   X=j.data,
@@ -178,16 +182,26 @@ data = list(
   Omega = Omega
 )
 init = NULL
-j.model   <- jags.model (file = model, data = data, inits = init, n.chains = n.chains)
-update(j.model, n.iter=1000)
-j.out   <- coda.samples (model = j.model, variable.names= c("Sigma","theta","mu"), n.iter = 10000)
-out.pft.try.na <- j.out
 
+print("Compiling JAGS model...")
+j.model   <- jags.model (file = model, data = data, inits = init, n.chains = n.chains)
+
+print("Updating JAGS model (burnin)...")
+n.update <- 20
+for(i in 1:n.update){
+  print(sprintf("[%d%%]", i*100/n.update))
+  update(j.model, n.iter = round(burnin/n.update))
+}
+print("Sampling JAGS model...")
+j.out   <- coda.samples (model = j.model, n.iter = n.iter,
+                         variable.names= c("Sigma","theta","mu"))
+
+out.pft.try.na <- j.out
+print("Done! Saving output...")
 #######################################################################################
 ## Save Data
-
 save(out.pft.try.na, file= paste0("output/try.pft.outputs.",args[1],".Rdata"))
-
+print("Done!")
 #######################################################################################
 
 # Next run process.mcmc.R
