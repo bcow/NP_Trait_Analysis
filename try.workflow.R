@@ -1,16 +1,18 @@
-args = commandArgs(trailingOnly=TRUE)
-
-#######################################################################################
-## Set up packages & data 
+################################################################################
+## Set up packages & data
 library(rjags)
 library(coda)
 library(mvtnorm)
 library(data.table)
-source("load.try.data.R")
 
-#######################################################################################
+args = commandArgs(trailingOnly=TRUE)
+run_name <- args[1]
+wd <- args[2]
+
+source(file.path(wd,"load.try.data.R"))
+
+################################################################################
 ## Do JAGS runs
-
 runs = list(
   uni = FALSE,
   uni.na = FALSE,
@@ -18,101 +20,89 @@ runs = list(
   multi.na = FALSE,
   multi.pft = FALSE,
   multi.pft.na = TRUE)
-
-if(file.exists("try.uni.mult.outputs.Rdata")){
-  load("try.uni.mult.outputs.Rdata")
-  runs[c("uni","uni.na","multi","multi.na")] <- FALSE
-}
-
-#######################################################################################
+################################################################################
 ## Univariate Run
-
-if(uni){
-
 model = "univarite.model.txt"
-
-# Without na's
-remove(j.data, j.model, j.out)
-print(model)
-print(Sys.time())
-
-j.data <- try
-N=dim(j.data)[1]; n=dim(j.data)[2]
-data = list(Y=j.data, N=N, n=n)
-init = NULL
-j.model   <- jags.model (file = model,data = data,inits = init, n.chains = 1)
-update(j.model, n.iter=1000)
-j.out   <- coda.samples (model = j.model,variable.names= c("mu"), n.iter = 10000)
-out.uni.try <- j.out
-
-
-# With na's
-remove(j.data, j.model, j.out)
-print(model)
-print(Sys.time())
-
-j.data <- try.na
-N=dim(j.data)[1]; n=dim(j.data)[2]
-data = list(Y=j.data, N=N, n=n)
-init = NULL
-j.model   <- jags.model (file = model,data = data,inits = init, n.chains = 1)
-update(j.model, n.iter=1000)
-j.out   <- coda.samples (model = j.model,variable.names= c("mu"), n.iter = 10000)
-out.uni.try.na <- j.out
-
-#######################################################################################
+uni.save <- c()
+if(runs$uni){
+  # Without na's
+  remove(j.data, j.model, j.out)
+  print(model)
+  print(Sys.time())
+  j.data <- try
+  N=dim(j.data)[1]; n=dim(j.data)[2]
+  data = list(Y=j.data, N=N, n=n)
+  init = NULL
+  j.model   <- jags.model (file = model,data = data,inits = init, n.chains = 1)
+  update(j.model, n.iter=1000)
+  j.out   <- coda.samples (model = j.model,variable.names= c("mu"), n.iter = 10000)
+  out.uni.try <- j.out
+  uni.save <- c(uni.save, "out.uni.try")
+}
+if(runs$uni.na){
+  # With na's
+  remove(j.data, j.model, j.out)
+  print(model)
+  print(Sys.time())
+  j.data <- try.na
+  N=dim(j.data)[1]; n=dim(j.data)[2]
+  data = list(Y=j.data, N=N, n=n)
+  init = NULL
+  j.model   <- jags.model (file = model,data = data,inits = init, n.chains = 1)
+  update(j.model, n.iter=1000)
+  j.out   <- coda.samples (model = j.model,variable.names= c("mu"), n.iter = 10000)
+  out.uni.try.na <- j.out
+  uni.save <- c(uni.save, "out.uni.try.na")
+}
+################################################################################
 ## Save Data
-
-save(out.uni.try,
-     out.uni.try.na,
-     file= paste0("output/try.uni.outputs.",args[1],".Rdata"))
-
-} # end if uni
-#######################################################################################
+if(length(uni.save > 0)){
+  t <- paste0("save(", paste(uni.save, collapse = ','),", file='",
+              paste0('output/try.uni.outputs.',args[1],'.Rdata'),"')")
+  eval(parse(text=t))
+}
+################################################################################
 ## Multivariate Run
-
-if(multi){
-
 model = "multivarite.model.txt"
-
-# Without na's
-remove(j.data, j.model, j.out)
-print(model)
-print(Sys.time())
-
-j.data <- try
-N=dim(j.data)[1]; n=dim(j.data)[2]
-data = list(Y=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
-init = list(mu = colMeans(j.data), prec.Sigma = solve(cov(j.data)))
-j.model   <- jags.model (file = model ,data = data,inits = init, n.chains = 1)
-update(j.model, n.iter=1000)
-j.out   <- coda.samples (model = j.model,variable.names= c("mu", "Sigma"),n.iter = 10000)
-out.multi.try <- j.out
-
-
-# With na's
-remove(j.data, j.model, j.out)
-print(model)
-print(Sys.time())
-
-j.data <- try.na
-N=dim(j.data)[1]; n=dim(j.data)[2]
-data = list(Y=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
-init = list(mu = colMeans(j.data), prec.Sigma = solve(cov(j.data)))
-j.model   <- jags.model (file = model, data = data, inits = init, n.chains = 1)
-update(j.model, n.iter=1000)
-j.out   <- coda.samples (model = j.model, variable.names= c("mu"), n.iter = 10000)
-out.multi.try.na <- j.out
-
-
-#######################################################################################
+multi.save <- c()
+if(runs$multi){
+  # Without na's
+  remove(j.data, j.model, j.out)
+  print(model)
+  print(Sys.time())
+  j.data <- try
+  N=dim(j.data)[1]; n=dim(j.data)[2]
+  data = list(Y=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
+  init = list(mu = colMeans(j.data), prec.Sigma = solve(cov(j.data)))
+  j.model   <- jags.model (file = model ,data = data,inits = init, n.chains = 1)
+  update(j.model, n.iter=1000)
+  j.out   <- coda.samples (model = j.model,n.iter = 10000,
+                           variable.names= c("mu", "Sigma"))
+  out.multi.try <- j.out
+  multi.save <- c(multi.save, "out.multi.try")
+}
+if(runs$multi.na){
+  # With na's
+  remove(j.data, j.model, j.out)
+  print(model)
+  print(Sys.time())
+  j.data <- try.na
+  N=dim(j.data)[1]; n=dim(j.data)[2]
+  data = list(X=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
+  init = list(mu = colMeans(j.data), prec.Sigma = solve(cov(j.data)))
+  j.model   <- jags.model (file = model, data = data, inits = init, n.chains = 1)
+  update(j.model, n.iter=1000)
+  j.out   <- coda.samples (model = j.model, variable.names= c("mu"), n.iter = 10000)
+  out.multi.try.na <- j.out
+  multi.save <- c(multi.save, "out.multi.try.na")
+}
+################################################################################
 ## Save Data
-
-save(out.multi.try,
-     out.multi.try.na,
-     file= paste0("output/try.multi.outputs.",args[1],".Rdata"))
-}# end if uni.na
-
+if(length(multi.save > 0)){
+  t <- paste0("save(", paste(multi.save, collapse = ','),", file='",
+              paste0('output/try.multi.outputs.',args[1],'.Rdata'),"')")
+  eval(parse(text=t))
+}
 #######################################################################################
 ## PFT Run without na's
 
@@ -121,7 +111,7 @@ model = "models/multivariate.grp.model.txt"
 j.data <- try.pft.na
 Nvars <- dim(j.data)[2]
 Nobs = dim(j.data)[1]
-Nvars = dim(j.data)[2] 
+Nvars = dim(j.data)[2]
 GroupNo = as.numeric(as.factor(try_full$pft[!is.na(try_full$pft)]))
 Ngroup = length(unique(GroupNo))
 Gamma = diag(Nvars)
@@ -136,7 +126,7 @@ burnin <- 1000
 data = list(
   X=j.data,
   Nobs = Nobs,
-  Nvars = Nvars, 
+  Nvars = Nvars,
   GroupNo = GroupNo,
   Ngroup = Ngroup,
   Gamma = Gamma,
@@ -166,5 +156,3 @@ print("Done!")
 #######################################################################################
 
 # Next run process.mcmc.R
-
-
