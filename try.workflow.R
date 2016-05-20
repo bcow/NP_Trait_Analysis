@@ -37,10 +37,8 @@ model = "models/univarite.model.txt"
 uni.save <- c()
 if(runs$uni){
   # Without na's
-  remove(j.data, j.model, j.out)
   print(model)
   print(Sys.time())
-  
   j.data <- try
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n)
@@ -51,7 +49,6 @@ if(runs$uni){
 }
 if(runs$uni.na){
   # With na's
-  remove(j.data, j.model, j.out)
   print(model)
   print(Sys.time())
   j.data <- try.na
@@ -68,14 +65,15 @@ if(length(uni.save > 0)){
   t <- paste0("save(", paste(uni.save, collapse = ','),", file='",
               paste0('output/try.uni.outputs.',args[1],'.Rdata'),"')")
   eval(parse(text=t))
+  print("Done with univariate")
 }
+
 ################################################################################
 ## Multivariate Run
 model = "models/multivarite.model.txt"
 multi.save <- c()
 if(runs$multi){
   # Without na's
-  remove(j.data, j.model, j.out)
   print(model)
   print(Sys.time())
   j.data <- try
@@ -88,7 +86,6 @@ if(runs$multi){
 }
 if(runs$multi.na){
   # With na's
-  remove(j.data, j.model, j.out)
   print(model)
   print(Sys.time())
   j.data <- try.na
@@ -105,6 +102,7 @@ if(length(multi.save > 0)){
   t <- paste0("save(", paste(multi.save, collapse = ','),", file='",
               paste0('output/try.multi.outputs.',args[1],'.Rdata'),"')")
   eval(parse(text=t))
+  print("Done with multivariate")
 }
 ################################################################################
 ## PFT Run without na's
@@ -112,6 +110,8 @@ if(length(multi.save > 0)){
 model = "models/multivariate.grp.model.txt"
 pft.save <- c()
 if(runs$multi.pft){
+  print(model)
+  print(Sys.time())
   j.data <- try
   Nvars <- dim(j.data)[2]
   Nobs = dim(j.data)[1]
@@ -120,7 +120,6 @@ if(runs$multi.pft){
   Ngroup = length(unique(GroupNo))
   Gamma = diag(Nvars)
   Omega = diag(Nvars)
-  
   data = list(
     X=j.data,
     Nobs = Nobs,
@@ -138,6 +137,8 @@ if(runs$multi.pft){
 
 
 if(runs$multi.pft.na){
+  print(model)
+  print(Sys.time())
 j.data <- try.na
 Nvars <- dim(j.data)[2]
 Nobs = dim(j.data)[1]
@@ -162,15 +163,16 @@ out.pft.try.na <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.name
 pft.save <- c(pft.save, "out.pft.try.na")
 }
 
-print("Done! Saving output...")
+print("Done with all the model runs! Saving output...")
 #######################################################################################
 ## Save Data
 if(length(pft.save > 0)){
   t <- paste0("save(", paste(pft.save, collapse = ','),", file='",
               paste0('output/try.pft.outputs.',args[1],'.Rdata'),"')")
   eval(parse(text=t))
+  print("Done with pfts")
 }
-print("Done!")
 #######################################################################################
-
+print(Sys.time())
+print("All Done!")
 # Next run process.mcmc.R
