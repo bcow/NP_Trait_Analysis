@@ -9,6 +9,7 @@ args = commandArgs(trailingOnly=TRUE)
 run_name <- args[1]
 wd <- args[2]
 
+setwd(getwd())
 source(file.path(wd,"load.try.data.R"))
 source(file.path(wd,"custom.jags.R"))
 
