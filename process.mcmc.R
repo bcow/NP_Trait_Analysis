@@ -6,13 +6,13 @@ library(data.table)
 source("load.try.data.R")
 
 source("load.try.mcmc.R")
-names <- colnames(try)
-uni <- load.try.mcmc("uni",names)
-multi <- load.try.mcmc("multi",names)
-pft <- load.try.mcmc("pft",names)
+traits <- colnames(try)
+uni <- load.try.mcmc("uni",traits)
+multi <- load.try.mcmc("multi",traits)
+pft <- load.try.mcmc("pft",traits)
 
 out.names <- c(uni,multi,pft)
-traits <- colnames(try)
+
 
 mus <- as.data.frame(matrix(NA, length(out.names)+1, length(traits)))
 mus[1,] <- colMeans(try)
