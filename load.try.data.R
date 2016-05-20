@@ -8,10 +8,9 @@ nan2na <- function(x){
 }
 try_full <- try_full[,lapply(.SD, nan2na)]
 
-# data without pfts
+# data with pfts
 try.na <- try_full[,.(log.LL, log.LMA, log.Nmass, log.Pmass, log.Rdmass)]
+try.na <- try.na[!is.na(try_full$pft)]
+
 try <- na.omit(try.na)
 
-# data with pfts
-try.pft.na <- try.na[!is.na(try_full$pft)]
-try.pft <- na.omit(try.na)

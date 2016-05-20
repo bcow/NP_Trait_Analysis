@@ -10,16 +10,26 @@ run_name <- args[1]
 wd <- args[2]
 
 source(file.path(wd,"load.try.data.R"))
+source(file.path(wd,"custom.jags.R"))
 
 ################################################################################
-## Do JAGS runs
+## JAGS runs setup 
 runs = list(
-  uni = FALSE,
-  uni.na = FALSE,
-  multi = FALSE,
-  multi.na = FALSE,
-  multi.pft = FALSE,
+  uni = TRUE,
+  uni.na = TRUE,
+  multi = TRUE,
+  multi.na = TRUE,
+  multi.pft = TRUE,
   multi.pft.na = TRUE)
+
+# needs to be the same for all the runs
+
+n.chains = 1
+n.iter <- 15000
+n.update <- 20
+burnin <- 1000
+thin <- 0
+
 ################################################################################
 ## Univariate Run
 model = "univarite.model.txt"
@@ -29,14 +39,13 @@ if(runs$uni){
   remove(j.data, j.model, j.out)
   print(model)
   print(Sys.time())
+  
   j.data <- try
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n)
-  init = NULL
-  j.model   <- jags.model (file = model,data = data,inits = init, n.chains = 1)
-  update(j.model, n.iter=1000)
-  j.out   <- coda.samples (model = j.model,variable.names= c("mu"), n.iter = 10000)
-  out.uni.try <- j.out
+  inits = NULL
+  var.names = c("mu")
+  out.uni.try <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
   uni.save <- c(uni.save, "out.uni.try")
 }
 if(runs$uni.na){
@@ -47,11 +56,9 @@ if(runs$uni.na){
   j.data <- try.na
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n)
-  init = NULL
-  j.model   <- jags.model (file = model,data = data,inits = init, n.chains = 1)
-  update(j.model, n.iter=1000)
-  j.out   <- coda.samples (model = j.model,variable.names= c("mu"), n.iter = 10000)
-  out.uni.try.na <- j.out
+  inits = NULL
+  var.names = c("mu")
+  out.uni.try.na <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
   uni.save <- c(uni.save, "out.uni.try.na")
 }
 ################################################################################
@@ -73,12 +80,9 @@ if(runs$multi){
   j.data <- try
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(Y=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
-  init = list(mu = colMeans(j.data), prec.Sigma = solve(cov(j.data)))
-  j.model   <- jags.model (file = model ,data = data,inits = init, n.chains = 1)
-  update(j.model, n.iter=1000)
-  j.out   <- coda.samples (model = j.model,n.iter = 10000,
-                           variable.names= c("mu", "Sigma"))
-  out.multi.try <- j.out
+  inits = list(mu = colMeans(j.data), prec.Sigma = solve(cov(j.data)))
+  var.names = c("mu", "Sigma")
+  out.multi.try <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
   multi.save <- c(multi.save, "out.multi.try")
 }
 if(runs$multi.na){
@@ -89,11 +93,9 @@ if(runs$multi.na){
   j.data <- try.na
   N=dim(j.data)[1]; n=dim(j.data)[2]
   data = list(X=j.data, N=N, n=n, Vsig = diag(n), mu0 = rep(0,n), Vmu = diag(.001,n))
-  init = list(mu = colMeans(j.data), prec.Sigma = solve(cov(j.data)))
-  j.model   <- jags.model (file = model, data = data, inits = init, n.chains = 1)
-  update(j.model, n.iter=1000)
-  j.out   <- coda.samples (model = j.model, variable.names= c("mu"), n.iter = 10000)
-  out.multi.try.na <- j.out
+  inits = list(mu = colMeans(j.data), prec.Sigma = solve(cov(j.data)))
+  var.names = c("mu", "Sigma")
+  out.multi.try.na <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
   multi.save <- c(multi.save, "out.multi.try.na")
 }
 ################################################################################
@@ -103,12 +105,39 @@ if(length(multi.save > 0)){
               paste0('output/try.multi.outputs.',args[1],'.Rdata'),"')")
   eval(parse(text=t))
 }
-#######################################################################################
+################################################################################
 ## PFT Run without na's
 
 model = "models/multivariate.grp.model.txt"
+pft.save <- c()
+if(runs$multi.pft){
+  j.data <- try
+  Nvars <- dim(j.data)[2]
+  Nobs = dim(j.data)[1]
+  Nvars = dim(j.data)[2]
+  GroupNo = as.numeric(as.factor(try_full$pft[!is.na(try_full$pft)]))
+  Ngroup = length(unique(GroupNo))
+  Gamma = diag(Nvars)
+  Omega = diag(Nvars)
+  
+  data = list(
+    X=j.data,
+    Nobs = Nobs,
+    Nvars = Nvars,
+    GroupNo = GroupNo,
+    Ngroup = Ngroup,
+    Gamma = Gamma,
+    Omega = Omega
+  )
+  inits = NULL
+  var.names = c("Sigma","theta","mu")
+  out.pft.try <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
+  pft.save <- c(pft.save, "out.pft.try")
+}
 
-j.data <- try.pft.na
+
+if(runs$multi.pft.na){
+j.data <- try.na
 Nvars <- dim(j.data)[2]
 Nobs = dim(j.data)[1]
 Nvars = dim(j.data)[2]
@@ -116,12 +145,6 @@ GroupNo = as.numeric(as.factor(try_full$pft[!is.na(try_full$pft)]))
 Ngroup = length(unique(GroupNo))
 Gamma = diag(Nvars)
 Omega = diag(Nvars)
-
-n.chains = 1
-n.iter <- 10000
-n.update <- 20
-burnin <- 1000
-
 
 data = list(
   X=j.data,
@@ -132,26 +155,20 @@ data = list(
   Gamma = Gamma,
   Omega = Omega
 )
-init = NULL
-
-print("Compiling JAGS model...")
-j.model   <- jags.model (file = model, data = data, inits = init, n.chains = n.chains)
-
-print("Updating JAGS model (burnin)...")
-n.update <- 20
-for(i in 1:n.update){
-  print(sprintf("[%d%%]", i*100/n.update))
-  update(j.model, n.iter = round(burnin/n.update))
+inits = NULL
+var.names = c("Sigma","theta","mu")
+out.pft.try.na <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
+pft.save <- c(pft.save, "out.pft.try.na")
 }
-print("Sampling JAGS model...")
-j.out   <- coda.samples (model = j.model, n.iter = n.iter,
-                         variable.names= c("Sigma","theta","mu"))
 
-out.pft.try.na <- j.out
 print("Done! Saving output...")
 #######################################################################################
 ## Save Data
-save(out.pft.try.na, file= paste0("output/try.pft.outputs.",args[1],".Rdata"))
+if(length(pft.save > 0)){
+  t <- paste0("save(", paste(pft.save, collapse = ','),", file='",
+              paste0('output/try.pft.outputs.',args[1],'.Rdata'),"')")
+  eval(parse(text=t))
+}
 print("Done!")
 #######################################################################################
 
