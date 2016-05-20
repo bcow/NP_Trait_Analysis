@@ -1,7 +1,7 @@
 custom.jags <- function(model,data,inits,n.chains,burnin,n.update, variable.names){
   
   print("Compiling JAGS model...")
-  j.model   <- jags.model (file = model, data = data, inits = init, n.chains = n.chains)
+  j.model   <- jags.model (file = model, data = data, inits = inits, n.chains = n.chains)
   
   print("Updating JAGS model (burnin)...")
   n.update <- 20

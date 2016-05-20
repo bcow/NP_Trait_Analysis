@@ -9,6 +9,7 @@ args = commandArgs(trailingOnly=TRUE)
 run_name <- args[1]
 wd <- args[2]
 
+setwd(getwd())
 source(file.path(wd,"load.try.data.R"))
 source(file.path(wd,"custom.jags.R"))
 
@@ -32,7 +33,7 @@ thin <- 0
 
 ################################################################################
 ## Univariate Run
-model = "univarite.model.txt"
+model = "models/univarite.model.txt"
 uni.save <- c()
 if(runs$uni){
   # Without na's
@@ -70,7 +71,7 @@ if(length(uni.save > 0)){
 }
 ################################################################################
 ## Multivariate Run
-model = "multivarite.model.txt"
+model = "models/multivarite.model.txt"
 multi.save <- c()
 if(runs$multi){
   # Without na's
