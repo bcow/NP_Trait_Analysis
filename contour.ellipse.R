@@ -43,14 +43,12 @@ for(N in 1:length(v1)){
   p <- ggplot(data = o) +
     stat_ellipse(aes(o1.v1, o1.v2),type="norm",linetype=2,colour="red") +
     stat_ellipse(aes(o2.v1, o2.v2),type="norm",linetype=2,colour="blue") +
-    stat_ellipse(aes(o3.v1, o3.v2),type="norm",colour="red") +
-    stat_ellipse(aes(o4.v1, o4.v2),type="norm",colour="blue") +
+    stat_ellipse(aes(o3.v1, o3.v2),type="norm",linetype=3, colour="red") +
+    stat_ellipse(aes(o4.v1, o4.v2),type="norm",linetype=3, colour="blue") +
     stat_ellipse(aes(o5.v1, o5.v2),type="norm",colour="green") +
+    stat_ellipse(aes(o6.v1, o6.v2),type="norm",colour="green") +
     labs(title = paste(xname,"vs",yname),x = xname,y = yname)
   plot(p)
-  
-  
-  
   
   dev.off()
   print(paste(xname, yname))
