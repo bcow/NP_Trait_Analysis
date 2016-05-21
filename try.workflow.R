@@ -16,10 +16,10 @@ source(file.path(wd,"custom.jags.R"))
 ################################################################################
 ## JAGS runs setup 
 runs = list(
-  uni = TRUE,
-  uni.na = TRUE,
-  multi = TRUE,
-  multi.na = TRUE,
+  uni = FALSE,
+  uni.na = FALSE,
+  multi = FALSE,
+  multi.na = FALSE,
   multi.pft = TRUE,
   multi.pft.na = TRUE)
 
@@ -130,7 +130,7 @@ if(runs$multi.pft){
     Omega = Omega
   )
   inits = list(mu = colMeans(j.data), 
-               prec.Sigma = solve(cov(j.data)),
+               Sigma = cov(j.data),
                theta = pft_means)
   var.names = c("Sigma","theta","mu")
   out.pft.try <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
@@ -160,7 +160,7 @@ data = list(
   Omega = Omega
 )
 inits = list(mu = colMeans(j.data), 
-             prec.Sigma = solve(cov(j.data)),
+             Sigma = cov(j.data),
              theta = pft_means)
 var.names = c("Sigma","theta","mu")
 out.pft.try.na <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
