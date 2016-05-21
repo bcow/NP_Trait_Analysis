@@ -129,7 +129,10 @@ if(runs$multi.pft){
     Gamma = Gamma,
     Omega = Omega
   )
-  inits = NULL
+  inits = list(mu = colMeans(j.data), 
+               prec.Sigma = solve(cov(j.data)),
+               theta = pft_means
+               )
   var.names = c("Sigma","theta","mu")
   out.pft.try <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
   pft.save <- c(pft.save, "out.pft.try")
