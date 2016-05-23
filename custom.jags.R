@@ -1,4 +1,4 @@
-custom.jags <- function(model,data,inits,n.chains,burnin,n.update, variable.names){
+custom.jags <- function(model,data,inits,n.chains,burnin,n.update,thin,variable.names){
   
   print("Compiling JAGS model...")
   j.model   <- jags.model (file = model, data = data, inits = inits, n.chains = n.chains)
@@ -11,6 +11,6 @@ custom.jags <- function(model,data,inits,n.chains,burnin,n.update, variable.name
   }
   print("Sampling JAGS model...")
   j.out   <- coda.samples (model = j.model, n.iter = n.iter,
-                           variable.names = variable.names)
+                           variable.names = variable.names,thin=thin)
   return(j.out)
 }

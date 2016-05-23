@@ -7,11 +7,10 @@ library(data.table)
 
 args = commandArgs(trailingOnly=TRUE)
 run_name <- args[1]
-wd <- args[2]
 
 setwd(getwd())
-source(file.path(wd,"load.try.data.R"))
-source(file.path(wd,"custom.jags.R"))
+source(file.path("load.try.data.R"))
+source(file.path("custom.jags.R"))
 
 ################################################################################
 ## JAGS runs setup 
@@ -104,12 +103,21 @@ if(length(multi.save > 0)){
   eval(parse(text=t))
   print("Done with multivariate")
 }
+
+################################################################################
 ################################################################################
 ## PFT Run without na's
+
+n.chains = 1
+n.iter <- 600000
+n.update <- 20
+burnin <- 1000
+thin <- 40
 
 model = "models/multivariate.grp.model.txt"
 pft.save <- c()
 if(runs$multi.pft){
+  print("-------------------------")
   print(model)
   print(Sys.time())
   j.data <- try
@@ -129,16 +137,16 @@ if(runs$multi.pft){
     Gamma = Gamma,
     Omega = Omega
   )
-  inits = list(mu = colMeans(j.data), 
-               Sigma = cov(j.data),
-               theta = pft_means)
-  var.names = c("Sigma","theta","mu")
-  out.pft.try <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
+  inits = list(mu = colMeans(j.data),
+               theta = as.matrix(pft_means))
+  var.names = c("theta","mu")
+  out.pft.try <- custom.jags(model,data,inits,n.chains,burnin,n.update,thin,var.names)
   pft.save <- c(pft.save, "out.pft.try")
 }
 
 
 if(runs$multi.pft.na){
+  print("-------------------------")
   print(model)
   print(Sys.time())
 j.data <- try.na
@@ -160,13 +168,12 @@ data = list(
   Omega = Omega
 )
 inits = list(mu = colMeans(j.data), 
-             Sigma = cov(j.data),
-             theta = pft_means)
-var.names = c("Sigma","theta","mu")
-out.pft.try.na <- custom.jags(model,data,inits,n.chains,burnin,n.update,var.names)
+             theta = as.matrix(pft_means))
+var.names = c("theta","mu")
+out.pft.try.na <- custom.jags(model,data,inits,n.chains,burnin,n.update,thin,var.names)
 pft.save <- c(pft.save, "out.pft.try.na")
 }
-
+print(Sys.time())
 print("Done with all the model runs! Saving output...")
 #######################################################################################
 ## Save Data

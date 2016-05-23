@@ -32,22 +32,8 @@ for(n in out.names){
 
 iter <- dim(outs[[1]])[1]
 
-a <- sort(try_full$pft[!is.na(try_full$pft)],index.return = T)
-splits <- split(try.na[a$ix,], a$x)
 
-trait_means <- colMeans(try)
-pft_means <- as.data.frame(matrix(NA, length(splits), length(traits)))
-colnames(pft_means) <- traits
-
-dim(pft_means)
-for(i in 1:length(splits)){
-  pft_means[i,] <- colMeans(splits[[i]],na.rm=T)
-  for(j in 1:length(traits)){
-    pft_means[i,traits[j]] <- ifelse(is.nan(pft_means[i,traits[j]]),trait_means[j],pft_means[i,traits[j]])
-  }
-}
-
-save(outs, mus, pft_means, traits, iter, file = 'output/try.outs.Rdata')
+save(outs, mus, traits, iter, file = 'output/try.outs.Rdata')
 
 #########################
 ## Sanity check
