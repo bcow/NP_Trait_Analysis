@@ -1,0 +1,361 @@
+\documentclass[11pt]{article}
+\linespread{1.2}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amssymb}
+\usepackage{latexsym, amsmath, amscd,amsthm}
+\usepackage{graphicx}
+\usepackage[percent]{overpic}
+\usepackage{pdfsync}
+\usepackage{units}
+\usepackage{epstopdf}
+\usepackage{pdfpages}
+\usepackage{listings}
+\lstset{  %Can use this for writing R code
+    language=R,
+    basicstyle=\ttfamily
+}
+
+\usepackage{paralist}
+\usepackage{color}
+
+\usepackage{forest}
+
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{placeins}
+
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+%\addtolength{\textwidth}{90pt}
+%\addtolength{\evensidemargin}{-60pt}
+%\addtolength{\oddsidemargin}{-60pt}
+%\addtolength{\topmargin}{-100pt}
+%\addtolength{\textheight}{2in}
+
+	\addtolength{\oddsidemargin}{-.875in}
+	\addtolength{\evensidemargin}{-.875in}
+	\addtolength{\textwidth}{1.75in}
+
+	\addtolength{\topmargin}{-1in}
+	\addtolength{\textheight}{2in}
+	
+	
+\usepackage[round, comma, authoryear, sort]{natbib}
+\bibliographystyle{agufull04}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For including sections of code
+
+\usepackage{fancyvrb}
+\DefineVerbatimEnvironment{code}{Verbatim}{fontsize=\small}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Begin user defined commands
+
+\newcommand{\map}[1]{\xrightarrow{#1}}
+
+\newcommand{\C}{\mathbb C}
+\newcommand{\F}{\mathbb F}
+%\newcommand{\H}{\mathbb H}
+%\newcommand{\N}{\mathbb N}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\R}{\mathbb R}
+
+
+\newcommand{\zbar}{\overline{\mathbb{Z}}}
+\newcommand{\qbar}{\overline{\mathbb{Q}}}
+
+\newcommand{\la}{\langle}
+\newcommand{\ra}{\rangle}
+\newcommand{\lra}{\longrightarrow}
+\newcommand{\hra}{\hookrightarrow}
+\newcommand{\bs}{\backslash}
+
+\newcommand{\al}{\alpha}
+\newcommand{\be}{\beta}
+
+%%stats commands
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+
+%%% Text Commands
+\newcommand{\tand}{\text{ and }}
+\newcommand{\tfor}{\text{ for }}
+\newcommand{\ton}{\text{ on }}
+\newcommand{\tin}{\text{ in }}
+\newcommand{\tif}{\text{ if }}
+
+\newcommand{\vectornorm}[1]{\left|\left|#1\right|\right|}
+
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\Aff}{Aff}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\im}{im}
+
+\newcommand{\Gam}{\text{ Gamma}}
+\newcommand{\Pois}{\text{ Poisson}}
+\newcommand{\Beta}{\text{ Beta}}
+\newcommand{\Bin }{\text{ Bin}}
+\newcommand{\NegBin}{\text{ NegBin}}
+
+%  End user defined commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% These establish different environments for stating Theorems, Lemmas, Remarks, etc.
+
+\newtheorem{Thm}{Theorem}
+\newtheorem{Prop}[Thm]{Proposition}
+\newtheorem{Lem}[Thm]{Lemma}
+\newtheorem{Cor}[Thm]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{Def}[Thm]{Definition}
+
+\theoremstyle{remark}
+\newtheorem{Rem}[Thm]{Remark}
+\newtheorem{Ex}[Thm]{Example}
+
+\theoremstyle{definition}
+\newtheorem{Problem}{Problem}
+
+\newenvironment{Solution}{\noindent{\it Solution.}}{\qed}
+
+\tikzset{
+Above/.style={
+  midway,
+  above,
+  font=\scriptsize,
+  text width=3.8cm,
+  align=center,
+  },
+Below/.style={
+  midway,
+  below,
+  font=\scriptsize,
+  text width=3.8cm,
+  align=center
+  }
+}
+
+
+% End environments 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+\author{Betsy Cowdery}
+\title{Bayesian Statistics Final Project\\
+Developing large-scale quantification of leaf trait relationships using multivariate hierarchical Bayesian meta-analytical models}
+\date{}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\subsection{Background}
+
+Developing large-scale quantification of leaf trait relationships are key to building robust terrestrial ecosystem models. Although there exist many  plant trait datasets, observations are not evenly distributed across the world. Areas that easily accessible and have economically important species of plants will produce the largest datasets. Similarly, some plant characteristics are more difficult to measure than others and will be studied less frequently. By quantifying the relationships between plant traits, we can use the data we have to predict the values that we lack \citep{Wright,Reich2007}. 
+
+In 2004 \citep{Wright} found that six plant traits (leaf mass per area, leaf lifespan, leaf nitrogen per unit mass, photosynthetic capacity per unit leaf mass, leaf dark respiration rate per unit mass  and leaf phosphorus concentration per unit mass), independent of classifications such as ‘plant functional types’ (PFTs), are all highly correlated. In fact, almost three-quarters of the global variation in these six traits was captured by a simple regression model through six-dimensional space \citep{Wright2005}. 
+
+Bayesian meta-analysis allows us to combine plant trait data from across numerous studies, leveraging the strong correlations between the plant traits, one can produce better constrained estimates of mean and precision for a each plant trait \citep{Dietze2014} . Furthermore, Bayesian models can be designed to accommodate data with missing values, thus increasing our sample size and strengthening our predictive power \citep{Clark2007}.
+
+My over goal is to build a model using Bayesian techniques to increase this predictive power. In this project I implemented and compared two hierarchical Bayesian multivariate normal models. The first model assumes that the mean value of an observed plant trait is drawn from the same distribution regardless of the biome of the observed plant. In other words, the model is pooled across biomes. The second model assumes that mean value of an observed plant trait will be drawn from different distributions according to biome. 
+
+
+\subsection{Experimental Data}
+
+The data used in this project is compiled from the global plant trait network (GLOPNET), a database created to quantify leaf economics across the world’s plant species. The total database consists of 2548 species–site combinations from 175 sites. There are 2021 different species in total, with 342 species occurring at more than one site. These data are described in detail and are available as supplemental material in \citep{Wright}. 
+
+In the dataset there are six plant-traits provided, however, due to computational limitations, I will restrict this study to three plant-traits: leaf mass per area (LMA), leaf nitrogen per unit mass (Nmass) and leaf dark respiration rate per unit mass (Rmass). Each variable has been log transformed. I chose these three variables specifically because LMA and Nmass have least missing observations in the dataset, while Rmass has the most. I wanted to see how the two models could improve predictions of Rmass, given the covariance structure it shares with LMA and Nmass. 
+
+\includegraphics[width=.5\textwidth]{pairs}
+
+Along the diagonal of of the above figure, we can see the distributions of the observed plant traits. All the data appears to follow a sufficiently normal distribution. I will follow previous literature in assuming that the underlying distributions are, in fact, normal \citep{LEBAUER2013}. On the lower left side of the grid, we can see the paired scatterplots of the data with linear regression lines and on the upper right side, the corresponding R2 values. All the data appears to be significantly correlated. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Models}
+
+The models were translated into BUGS (Bayesian inference Using Gibbs Sampling) code through JAGS (Just another Gibbs Sampler). \citep{Gelman2013, Plummer2010, Lebauer2013, koricheva2013handbook} 
+
+\subsection{Multivariate Model: Pooled}
+
+Let $Y_{i,j}$ be the $i$th observation of the $j$th trait.
+
+\begin{align*}
+X_{i,j}  &\sim N(Y_{i,j}, \tau^2) \\
+Y_j      &\sim N_J(\vec{\theta}_j, \Sigma) \\
+\theta_j &\sim N_J(\vec{\mu}, V_\mu) \\
+\Sigma   &\sim IW(\Gamma, J) \\	
+\mu      &\sim N(0,0.001) \\
+V_\mu    &\sim IW(\Omega, J)
+\end{align*}
+
+BUGS Code: 
+
+\begin{code}
+  model{
+    for(m in 1:Nvars){mu[m]~dnorm(0,0.001)}  # uninformative hyperprior
+    Vmu~dwish(Omega[,],Nvars) 
+
+    theta[1:Nvars]~dmnorm(mu,Vmu)  # prior for fixed effects
+    
+    prec.Sigma~dwish(Gamma[,],Nvars) # uninformative prior on precision
+    Sigma[1:Nvars,1:Nvars] <- inverse(prec.Sigma[,])
+    
+    for(i in 1:Nobs){
+      Y[i,1:Nvars]~dmnorm(theta[],prec.Sigma[,])
+      for(j in 1:Nvars){
+        X[i,j]~dnorm(Y[i,j],10000000) # observation error is set to very low
+      }
+    }
+  }
+ \end{code}
+
+
+\subsection{Multivariate Model: Grouped by biome}
+
+Let $Y_{i,p}$ be the $i$th observation of the $p$th trait.
+
+\begin{align*}
+X_{i,p}  &\sim N(Y_{i,p}, \tau^2)\\
+Y_j      &\sim N_p(\vec{\theta}_j, \Sigma_j) \\
+\theta_j &\sim N_p(\vec{\mu}, V_\mu)\\
+\Sigma_j &\sim IW(\Gamma, p)\\
+\mu      &\sim N(0,0.001) \\
+V_\mu    &\sim IW(\Omega, p)
+\end{align*}
+
+BUGS Code: 
+
+\begin{code}
+  model{
+    for(i in 1:Nobs){
+      Y[i,1:Nvars]~dmnorm(theta[GroupNo[i],],Sigma[GroupNo[i],,])
+      for(p in 1:Nvars){
+        X[i,p]~dnorm(Y[i,p],10000000) #observation error is set to very low
+      }
+    }
+    for(j in 1:Ngroup){
+      theta[j,1:Nvars]~dmnorm(mu[],Vmu[,])
+      Sigma[j,1:Nvars,1:Nvars]~dwish(Gamma[,],Nvars)
+    }
+    for(m in 1:Nvars){mu[m]~dnorm(0,0.001)}
+    Vmu[1:Nvars,1:Nvars]~dwish(Omega[,],Nvars)
+  }
+ \end{code}
+
+Each model was run for 10,000 iterations, resulting in 10,000 samples for the theta and sigma variables. The models were then run for another 1,000 iterations to generated predicted values for each of the three plant-traits. 
+
+\newpage
+\section{Results}
+
+Below are three figures, one for each plant trait, that compare the distributions of the observed data with the posterior probability distributions for the mean value of the plant trait under both models. The means separated by biome are in plotted in color and solid curve, while the completely pooled mean is plotted with black a black, dotted curve. \\
+
+\includegraphics[height=.6\textheight]{LMA_post}\\
+\newpage
+\includegraphics[height=.5\textheight]{Nmass_post}\\
+\includegraphics[height=.5\textheight]{Rmass_post}
+\newpage
+
+We can also look at the Q-Q plots of observed data against predicted data. Unfortunately, there is no way to "compare" the predicted data for missing observations, but we can verify whether the model is accurately predicting the data that was observed. \\
+
+
+Model 1: Completely pooled\\
+
+\includegraphics[width=.8\textwidth]{qqplot_model1}\\
+\newpage
+Model 2: Separated by biome\\
+
+\includegraphics[width=.7\textwidth]{qqplot_model2}
+
+In both cases the models predict LMA and Nmass almost perfectly. However, though the distributions are different, neither model appears to predict Rmass more accurately than the other. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion}
+
+The results of this project suggest that a multivariate normal model in which plant-trait means are completely pooled may not be sufficient in capturing the variability in the data. 
+
+Dividing the means by biome illuminated some distinct differences in posterior distributions, especially in the case of the wetland biome. For all of the plant traits the posterior predictive distribution for wetlands stood apart from those of the other biomes. This suggests that a model that takes into account biomes is preferable. 
+
+ On the other hand, the differences between biomes isn't great enough to pull apart the distributions of the observed plant traits, which could have resulted in a non-normal and perhaps even multi-modal distribution. Furthermore, despite the added complexity of the the model that incorporates biomes, the accuracy of the predicted values for Rmass do not appear to greatly improve. 
+ 
+ Thus, it's not immediately apparent whether the added complexity of the model separated by biome is worth the additional computational cost. 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$$y_t | \beta_t, \sigma^2 \sim N(x_t^T \beta_t, \sigma^2 $$
+
+
+$$\beta_t | \beta_{t-1}, \sigma^2 \sim N(\beta_{t-1}, \sigma^2 W_t $$
+
+(a) Given that $\beta_{t-1} | \beta_{t-1}, \sigma^2 \sim N(\beta_{t-1}, \sigma^2 W_t $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\bibliography{GE509_Project}
+
+\end{document}
