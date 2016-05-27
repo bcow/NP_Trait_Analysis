@@ -12,6 +12,7 @@ old_EE509_Project/*
 data/*
 # too big
 output/*
+figures/*
 # misc files
 try.pft.workflow.R
 *wrkflw*
@@ -20,3 +21,4 @@ mymodel.txt
 psql.expamples.R
 scrap.R
 figures/figures.old.data/*
+Icon*

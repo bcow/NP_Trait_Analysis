@@ -21,10 +21,6 @@ for(N in 1:length(v1)){
   xname <- paste(unlist(strsplit(traits[v1[N]], "[.]"))[1:2],collapse =" ")
   yname <- paste(unlist(strsplit(traits[v2[N]], "[.]"))[1:2],collapse =" ")
   
-  # png(filename = file.path("figures",
-  #   paste(colnames(outs[[1]])[v1[N]],colnames(outs[[1]])[v2[N]],"png", sep=".")), 
-  #   height = 800, width = 800)
-  
   # ellipses 
   
   o <- as.data.frame(cbind(
@@ -48,9 +44,9 @@ for(N in 1:length(v1)){
   for(i in 1:length(outs)){
     x <- paste0("o",i,".v",1); y <- paste0("o",i,".v",2)
     p1 <- p1 + stat_ellipse(aes_string(x = x, y = y), type="norm",
-                          # colour = pal[ceiling(i/2)], 
-                          colour = pal[i],
-                          linetype = i %% 2 + 1, size = 1.1, alpha=.5)
+                            # colour = pal[ceiling(i/2)], 
+                            colour = pal[i],
+                            linetype = i %% 2 + 1, size = 1.1, alpha=.5)
     if(i %in% grep(".na", names(outs))){
       p2 <- p2 + stat_ellipse(aes_string(x = x, y = y), type="norm",
                               # colour = pal[ceiling(i/2)], 
@@ -58,8 +54,16 @@ for(N in 1:length(v1)){
                               linetype = i %% 2 + 1, size = 1.1, alpha = .5)
     }
   }
+  
+  png(filename = file.path("figures", paste(xname, yname,"all","png", sep=".")),
+      height = 800, width = 800)
   plot(p1 + labs(title = paste(xname,"vs",yname),x = xname,y = yname))
+  dev.off()
+  
+  png(filename = file.path("figures", paste(xname, yname,"na","png", sep=".")),
+      height = 800, width = 800)
   plot(p2 + labs(title = paste(xname,"vs",yname),x = xname,y = yname))
-  #dev.off()
+  dev.off()
+  
   print(paste(xname, yname))
 }
