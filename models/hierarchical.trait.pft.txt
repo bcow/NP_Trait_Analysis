@@ -1,0 +1,27 @@
+model{
+  
+  # Model structure
+  
+  for(i in 1:n_pfts){
+    # mu_pft[i]~dnorm(mu_trait[trait_pft[i]], tau_pfts[pft[i]])
+    mu_pft[i]~dnorm(mu_trait[trait_pft[i]], tau_pfts)
+  }
+  for(i in 1:n_obvs){
+    obvs[i]~dnorm(mu_pft[pft_obvs[i]], tau_obvs)
+  }
+  
+  # Priors
+  
+  mu_t[1:n_traits]~dmnorm(mu0[],Vmu0)
+  mu_trait[1:n_traits]~dmnorm(mu_t[], Sigma_t[,])
+  
+  Sigma_t[1:n_traits,1:n_traits]~dwish(Omega[,],n_traits)
+  
+  # Returns errors - though ideally this should work
+  # for(i in 1:n_pfts){tau_pfts[i]~dgamma(0.001,0.001)}
+  # for(i in 1:n_species){tau_spec[i]~dgamma(0.001,0.001)}
+  
+  tau_pfts~dgamma(0.001,0.001)
+  tau_obvs~dgamma(0.001,0.001)
+  
+}

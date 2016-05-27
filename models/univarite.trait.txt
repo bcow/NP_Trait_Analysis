@@ -1,0 +1,17 @@
+model{
+  
+  # Model structure
+  
+  for(i in 1:n_traits){
+    mu_trait[i]~dnorm(mu_t,tau_trait)
+  }
+  for(i in 1:n_obvs){
+    obvs[i]~dnorm(mu_trait[trait_obvs[i]], tau_obvs)
+  }
+  
+  # Priors
+  mu_t~dnorm(0,.001)
+  tau_trait~dgamma(0.001,0.001)
+  tau_obvs~dgamma(0.001,0.001)
+  
+}
