@@ -3,7 +3,7 @@ library(rjags)
 library(coda)
 library(mvtnorm)
 library(data.table)
-library(shinystan)
+# library(shinystan)
 library(reshape)
 
 source("load.try.data.R")
@@ -11,6 +11,7 @@ source("custom.jags.R")
 
 args = commandArgs(trailingOnly=TRUE)
 # args = c("c1", "TRUE", "TRUE", "TRUE", "TRUE") # just for dataing
+print(args)
 
 ## DATA FORMATTING #############################################################
 

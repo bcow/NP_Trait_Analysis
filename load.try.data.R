@@ -17,7 +17,7 @@ try.na <- try.na[!is.na(try_full$pft)]
 try.tps.na <- try.tps.na[!is.na(try_full$pft)]
 # data with pfts and no missing values
 try <- na.omit(try.na)
-try.more <- na.omit(try.more.na)
+try.tps <- na.omit(try.tps.na)
 # setup initializations for models
 traits <- colnames(try)
 trait_means <- colMeans(try)
