@@ -15,7 +15,8 @@ print(args)
 
 ## DATA FORMATTING #############################################################
 
-na <- ifelse(exists(args[6]),paste0(".",args[6]),"") 
+na <- args[6]
+na <- ifelse(exists(na),paste0(".",na),"") 
 x <- get(paste0("try.tps",na))
 
 try_data <- melt(x, id.vars = c("pft", "AccSpeciesName"))
@@ -51,10 +52,10 @@ runs = list(
 )
 
 n.chains = 1
-n.iter <- 15000
-n.update <- 20
-burnin <- 1000
-thin <- NULL
+n.iter <- 15000*40
+n.update <- 20*40
+burnin <- 10000
+thin <- 40
 
 ## UNIVARIATE: TRAIT ###########################################################
 
@@ -185,9 +186,9 @@ if(runs$hier.trait.pft.spec){
                      n.update = n.update, n.iter = n.iter, thin = thin, 
                      variable.names = variable.names)
   
-  save(out, file = paste0("hier.trait.pft.spec",na,".",args[1],".Rdata"))
+  save(out, file = paste0("output/hier.trait.pft.spec",na,".",args[1],".Rdata"))
   remove(model,out)
-  print("output/Done with hierarchical: trait, pft, species")
+  print("Done with hierarchical: trait, pft, species")
 }
 
 ################################################################################

@@ -13,7 +13,7 @@ custom.jags <- function(model,data,inits,n.chains,burnin,n.update,n.iter,thin=NU
   print("Sampling JAGS model...")
   if(is.null(thin)){
     j.out   <- coda.samples (model = j.model, n.iter = n.iter,
-                             variable.names = variable.names)
+                             variable.names = variable.names,progress.bar = "gui")
   }else{
     j.out   <- coda.samples (model = j.model, n.iter = n.iter,
                              variable.names = variable.names,thin=thin)
