@@ -1,5 +1,8 @@
 ## LOAD DATA AND PACKAGES #############################################################
 library(rjags)
+library(coda)
+library(mvtnorm)
+library(data.table)
 library(shinystan)
 library(reshape)
 
