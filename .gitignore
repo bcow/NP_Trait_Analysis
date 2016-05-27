@@ -11,8 +11,7 @@ old_EE509_Project/*
 # private
 data/*
 # too big
-output/old/*
-output/*.c*
+output/*
 # misc files
 try.pft.workflow.R
 *wrkflw*
@@ -20,3 +19,4 @@ contour..R
 mymodel.txt
 psql.expamples.R
 scrap.R
+figures/figures.old.data/*
