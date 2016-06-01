@@ -10,37 +10,28 @@ source("load.try.data.R")
 source("custom.jags.R")
 
 args = commandArgs(trailingOnly=TRUE)
-# args = c("c1", "TRUE", "TRUE", "TRUE", "TRUE") # just for dataing
+# args = c("c1", "TRUE", "TRUE", "TRUE", "TRUE") # just for testing
 print(args)
 
 ## DATA FORMATTING #############################################################
 
 na <- args[6]
 na <- ifelse(exists(na),paste0(".",na),"") 
-x <- get(paste0("try.tps",na))
 
-try_data <- melt(x, id.vars = c("pft", "AccSpeciesName"))
-colnames(try_data) <- c("pft","species","trait","observed")
+DT <- get(paste0("try.tps",na))
+obvs <- DT[,traits,with=FALSE]
 
-try_data$pft<- as.numeric(as.factor(try_data$pft))
-try_data$species <- as.numeric(as.factor(try_data$species))
-try_data$trait <- as.numeric(try_data$trait)
+trait_means <- DT[, lapply(.SD, function(x) mean(x, na.rm = T)), 
+                  .SDcols = traits]
+pft_means <-   DT[, lapply(.SD, function(x) mean(x, na.rm = T)),
+                  by = pft, .SDcols = traits]
+spec_means <-  DT[, lapply(.SD, function(x) mean(x, na.rm = T)),
+                  by = list(pft,species)]
 
-trait_means <- aggregate(observed ~ trait, data = try_data, FUN = mean)
-pft_means   <- aggregate(observed ~ trait + pft, data = try_data, FUN = mean)
-spec_means  <- aggregate(observed ~ trait + pft + species, data = try_data, 
-                         FUN = mean)
-
-n_obvs=dim(try_data)[1] 
-n_traits = dim(trait_means)[1]
+n_obvs=dim(obvs)[1] 
+n_traits = length(traits)
 n_pfts = dim(pft_means)[1]
 n_species = dim(spec_means)[1]
-
-n.chains <- 1
-burnin <- 1000
-n.update <- 20
-n.iter <- 10000
-thin <- NULL
 
 ## JAGS RUNS SETUP #############################################################
 
@@ -51,11 +42,13 @@ runs = list(
   hier.trait.pft.spec = as.logical(args[5])  
 )
 
-n.chains = 1
-n.iter <- 15000*40
-n.update <- 20*40
+n.chains <-  1
+thin <- NULL; thin.n <- ifelse(is.null(thin),1,thin)
+n.iter <- 15000*thin.n
+n.update <- 20*thin.n 
 burnin <- 10000
-thin <- 40
+
+
 
 ## UNIVARIATE: TRAIT ###########################################################
 
@@ -67,12 +60,11 @@ if(runs$uni.trait){
   print(Sys.time())
   
   data <- list(
-    trait_obvs = try_data$trait,
-    obvs = try_data$observed,
+    obvs = DT$observed,
     n_traits = n_traits,
     n_obvs = n_obvs)
   
-  inits = list(mu_trait = trait_means$observed)
+  inits = list(mu_trait = as.numeric(trait_means))
   variable.names <- c("mu_trait")
   out <- custom.jags(model = model, data = data, inits = inits,
                      n.chains = n.chains, burnin = burnin, 
@@ -94,15 +86,13 @@ if(runs$multi.trait){
   print(Sys.time())
   
   data <- list(
-    trait_obvs = try_data$trait,
-    obvs = try_data$observed,
+    obvs = DT$observed,
     n_traits = n_traits,
-    n_obvs = n_obvs, 
+    n_obvs = n_obvs,
     mu0 = rep(0,n_traits), 
-    Vmu0 = diag(.001,n_traits),
-    Omega = diag(n_traits))
+    Sigma0 = diag(.001,n_traits))
   
-  inits = list(mu_trait = trait_means$observed)
+  inits = list(mu_trait = as.numeric(trait_means))
   variable.names <- c("mu_trait")
   
   out <- custom.jags(model = model, data = data, inits = inits,
@@ -117,37 +107,37 @@ if(runs$multi.trait){
 
 ## HIERARCHICAL: TRAIT, PFT ####################################################
 
-if(runs$hier.trait.pft){
+# if(runs$hier.trait.pft){
+
+model = "models/hierarchical.trait.pft.txt"
+print("-------------------------")
+print(model)
+print(Sys.time())
+
+data <- list(
+  pft_obvs = as.numeric(as.factor(DT[,pft])),
+  obvs = DT[,traits,with=FALSE],
   
-  model = "models/hierarchical.trait.pft.txt"
-  print("-------------------------")
-  print(model)
-  print(Sys.time())
-  
-  data <- list(
-    trait_pft = pft_means$trait,
-    pft_obvs = try_data$pft,
-    obvs = try_data$observed,
-    n_pfts = n_pfts,
-    n_traits = n_traits,
-    n_obvs = n_obvs, 
-    mu0 = rep(0,n_traits), 
-    Vmu0 = diag(.001,n_traits),
-    Omega = diag(n_traits))
-  
-  inits = list(mu_trait = trait_means$observed,
-               mu_pft = pft_means$observed)
-  variable.names <- c("mu_trait","mu_pft")
-  
-  out <- custom.jags(model = model, data = data, inits = inits,
-                     n.chains = n.chains, burnin = burnin, 
-                     n.update = n.update, n.iter = n.iter, thin = thin, 
-                     variable.names = variable.names)
-  
-  save(out, file = paste0("output/hier.trait.pft",na,".",args[1],".Rdata"))
-  remove(model,out)
-  print("Done with hierarchical: trait, pft")
-}
+  n_pfts = n_pfts,
+  n_traits = n_traits,
+  n_obvs = n_obvs, 
+  mu0 = rep(0,n_traits), 
+  Sigma0 = diag(.001,n_traits),
+  Omega = diag(n_traits))
+
+inits = list(mu_trait = as.numeric(trait_means),
+             mu_pft_trait = as.matrix(pft_means[,traits,with=F]))
+variable.names <- c("mu_trait","mu_pft_trait")
+
+out <- custom.jags(model = model, data = data, inits = inits,
+                   n.chains = n.chains, burnin = burnin, 
+                   n.update = n.update, n.iter = n.iter, thin = thin, 
+                   variable.names = variable.names)
+
+save(out, file = paste0("output/hier.trait.pft",na,".",args[1],".Rdata"))
+remove(model,out)
+print("Done with hierarchical: trait, pft")
+# }
 
 ## HIERARCHICAL: TRAIT, PFT, SPECIES ###########################################
 
@@ -159,12 +149,9 @@ if(runs$hier.trait.pft.spec){
   print(Sys.time())
   
   data <- list(
-    trait_pft = pft_means$trait, 
-    # pft = pft_means$pft, # want to bring this back if I can get tau's working
-    pft_spec = spec_means$pft,
-    # spec = spec_means$species,
-    spec_obvs = try_data$species, 
-    obvs = try_data$observed,
+    pft_spec = as.numeric(as.factor(spec_means$pft)),
+    spec_obvs = as.numeric(as.factor(DT$species)), 
+    obvs =  DT[,traits,with=FALSE],
     
     n_traits = n_traits, 
     n_pfts = n_pfts,
@@ -172,14 +159,14 @@ if(runs$hier.trait.pft.spec){
     n_obvs = n_obvs, 
     
     mu0 = rep(0,n_traits), 
-    Vmu0 = diag(.001,n_traits),
+    Sigma0 = diag(.001,n_traits),
     Omega = diag(n_traits))
   
-  inits = list(mu_trait = trait_means$observed, 
-               mu_pft = pft_means$observed, 
-               mu_spec = spec_means$observed)
+  inits = list(mu_trait = as.numeric(trait_means),
+               mu_pft_trait = as.matrix(pft_means[,traits,with=F]),
+               mu_spec_pft_trait = as.matrix(spec_means[,traits,with=F]))  
   
-  variable.names <- c("mu_trait","mu_pft","mu_spec")
+  variable.names <- c("mu_trait","mu_pft_trait","mu_spec_pft_trait")
   
   out <- custom.jags(model = model, data = data, inits = inits,
                      n.chains = n.chains, burnin = burnin, 
