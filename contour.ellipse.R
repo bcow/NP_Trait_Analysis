@@ -2,8 +2,11 @@
 # Plots using dataEllipse() and with eigenvectors
 require(ggplot2)
 library(RColorBrewer)
+require(gridExtra)
 
 load("output/mu_trait.outs.Rdata")
+#load("output/mu_pft.outs.Rdata")
+
 
 a <- b <- length(traits)
 
@@ -22,48 +25,73 @@ for(N in 1:length(v1)){
   yname <- paste(unlist(strsplit(traits[v2[N]], "[.]"))[1:2],collapse =" ")
   
   # ellipses 
-  
-  o <- as.data.frame(cbind(
-    "o1.v1" = outs[[1]][,v1[N]],
-    "o1.v2" = outs[[1]][,v2[N]]
-  ))
+  m <- max(as.numeric(lapply(outs, function(x) dim(x)[1])))
+  o <- as.data.frame(matrix(NA,m,2*length(outs)))
+  colnames(o) <- unlist(lapply(1:length(outs), function(i) c(paste0(names(outs)[i],".v",1), paste0(names(outs)[i],".v",2))))
   
   for(i in 1:length(outs)){
-    o[paste0("o",i,".v",1)]<- outs[[i]][,v1[N]]
-    o[paste0("o",i,".v",2)]<- outs[[i]][,v2[N]]
+    o[1:dim(outs[[i]])[1],paste0(names(outs)[i],".v",1)]<- outs[[i]][,v1[N]]
+    o[1:dim(outs[[i]])[1],paste0(names(outs)[i],".v",2)]<- outs[[i]][,v2[N]]
   }
   
-  pal_col <- c()
-  pal <- brewer.pal(length(outs),"Paired")    
-  names(pal) <- names(outs)
-  #pal<-brewer.pal(round(length(outs)/2),"hcl")
-  #pal <- c(palette(rainbow(32))[])
+  varnames <- names(outs)
+  add_ellipses <- lapply(varnames, function(i) stat_ellipse(
+    aes_q(x = as.name(paste0(i,".v",1)), y = as.name(paste0(i,".v",2)), colour = i),
+    type="norm", size = 1.5))
   
-  p1 <- ggplot(data = o)
-  p2 <-  ggplot(data = o)
-  for(i in 1:length(outs)){
-    x <- paste0("o",i,".v",1); y <- paste0("o",i,".v",2)
-    p1 <- p1 + stat_ellipse(aes_string(x = x, y = y), type="norm",
-                            # colour = pal[ceiling(i/2)], 
-                            colour = pal[i],
-                            linetype = i %% 2 + 1, size = 1.1, alpha=.5)
-    if(i %in% grep(".na", names(outs))){
-      p2 <- p2 + stat_ellipse(aes_string(x = x, y = y), type="norm",
-                              # colour = pal[ceiling(i/2)], 
-                              colour = pal[i],
-                              linetype = i %% 2 + 1, size = 1.1, alpha = .5)
-    }
-  }
+  add_scatter <- lapply(varnames, function(i) geom_point(
+    aes_q(x = as.name(paste0(i,".v",1)), y = as.name(paste0(i,".v",2)), colour = i),
+    alpha=.05))
   
-  png(filename = file.path("figures", paste(xname, yname,"all","png", sep=".")),
-      height = 800, width = 800)
-  plot(p1 + labs(title = paste(xname,"vs",yname),x = xname,y = yname))
-  dev.off()
+  p <- ggplot(data = o, aes(x = time)) + 
+    add_ellipses + add_scatter +
+    labs(title = paste(xname,"vs",yname),x = xname,y = yname)
   
-  png(filename = file.path("figures", paste(xname, yname,"na","png", sep=".")),
-      height = 800, width = 800)
-  plot(p2 + labs(title = paste(xname,"vs",yname),x = xname,y = yname))
-  dev.off()
+  assign(paste0("p",N), p)
   
   print(paste(xname, yname))
 }
+
+grid.arrange(p1,p2,p3)
+plot(p3)
+
+# 
+# png(filename = file.path("figures", paste(traits[v1[N]], traits[v2[N]],"all","png", sep=".")),
+#     height = 800, width = 800)
+# plot(p1 + labs(title = paste(xname,"vs",yname),x = xname,y = yname))
+# dev.off()
+# 
+# png(filename = file.path("figures", paste(traits[v1[N]], traits[v2[N]],"na","png", sep=".")),
+#     height = 800, width = 800)
+# plot(p2 + labs(title = paste(xname,"vs",yname),x = xname,y = yname))
+# dev.off()
+
+
+
+
+
+################################################################################
+# Old version, not necessary right now
+
+# pal_col <- c()
+# pal <- brewer.pal(length(outs),"Paired")    
+# names(pal) <- names(outs)
+# #pal<-brewer.pal(round(length(outs)/2),"hcl")
+# pal <- c(palette(rainbow(32))[])
+
+# p1 <- ggplot(data = o)
+# p2 <-  ggplot(data = o)
+# for(i in 1:length(outs)){
+#   x <- paste0("o",i,".v",1); y <- paste0("o",i,".v",2)
+#   p1 <- p1 + stat_ellipse(aes_string(x = x, y = y), type="norm",
+#                           # colour = pal[ceiling(i/2)], 
+#                           colour = pal[i],
+#                           linetype = i %% 2 + 1, size = 1.1, alpha=.5)
+#   if(i %in% grep(".na", names(outs))){
+#     p2 <- p2 + stat_ellipse(aes_string(x = x, y = y), type="norm",
+#                             # colour = pal[ceiling(i/2)], 
+#                             colour = pal[i],
+#                             linetype = i %% 2 + 1, size = 1.1, alpha = .5)
+#   }
+# }
+# 

@@ -2,6 +2,11 @@ library(rjags)
 library(coda)
 library(mvtnorm)
 library(data.table)
+library(mcmc)
+library(mcmcplots)
+
+source("load.try.data.R")
+source("load.try.mcmc.R")
 
 ## MU_TRAIT #################################################################### 
 
@@ -10,7 +15,7 @@ v = "mu_trait"
 uni <- load.try.mcmc("uni.trait",traits,v)
 multi <- load.try.mcmc("multi.trait",traits,v)
 hier.tp <- load.try.mcmc("hier.trait.pft",traits,v)
-hier.tps <- load.try.mcmc("hier.trait.pft.spec",traits,v)
+#hier.tps <- load.try.mcmc("hier.trait.pft.spec",traits,v)
 
 out.names <- c(uni,multi,hier.tp,hier.tps)
 outs <- list()
