@@ -1,22 +1,21 @@
-custom.jags <- function(model,data,inits,n.chains,burnin,n.update,n.iter,thin=NULL,variable.names){
-  
-  print("Compiling JAGS model...")
-  j.model   <- jags.model (file = model, data = data, inits = inits,
-                           n.chains = n.chains)
-  
-  print("Updating JAGS model (burnin)...")
-  n.update <- 20
-  for(i in 1:n.update){
-    print(sprintf("[%d%%]", i*100/n.update))
-    update(j.model, n.iter = round(burnin/n.update))
-  }
-  print("Sampling JAGS model...")
-  if(is.null(thin)){
-    j.out   <- coda.samples (model = j.model, n.iter = n.iter,
-                             variable.names = variable.names,progress.bar = "gui")
-  }else{
-    j.out   <- coda.samples (model = j.model, n.iter = n.iter,
-                             variable.names = variable.names,thin=thin)
-  }
-  return(j.out)
+custom.jags <- function(model, data, inits, n.chains, n.iter, variable.names){
+    library(R2jags)
+    message("Initial attempt...")
+    exports <- ls(envir = .GlobalEnv)
+    j.begin <- jags.parallel(data = data, inits = inits,
+                           parameters.to.save = variable.names,
+                           model.file = model, n.chains = n.chains,
+                           n.iter = n.iter, export_obj_names = exports)
+
+    rhat <- j.begin$BUGSoutput$summary[,"Rhat"]
+    if(all(rhat < 1.1)){
+        message("Model converged on first try!")
+        j.out <- j.begin
+    } else {
+        message("Model did not converge yet. Resuming sampling until convergence")
+        recompile(j.begin)
+        j.out <- autojags(j.begin)
+    }
+    return(j.out)
 }
+

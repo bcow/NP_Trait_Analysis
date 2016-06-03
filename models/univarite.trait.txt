@@ -4,13 +4,15 @@ model{
 
   for(j in 1:n_traits){
     for(i in 1:n_obvs){
-      obvs[i,j]~dnorm(mu_trait[j], tau_obvs)
+      obvs[i,j]~dnorm(mu_trait[j], tau_obvs[j])
     }
   }
   
   # Priors
   
-  for(j in 1:n_traits){mu_trait[j]~dnorm(0,.001)}
-  tau_obvs~dgamma(0.001,0.001)
+  for(j in 1:n_traits){
+    mu_trait[j]~dnorm(0,.001)
+    tau_obvs[j]~dgamma(0.001, 0.001)
+  }
   
 }

@@ -1,6 +1,8 @@
 # load.try.data
 library(data.table)
+try_full <- readRDS("data/try.data.rds")
 try_full <- data.table(readRDS("data/try.data.rds"))
+
 # Some na's in the table accidentally got changed to NaN, 
 # switch back so it doesn't confuse the model
 nan2na <- function(x){

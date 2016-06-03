@@ -1,16 +1,16 @@
 ## LOAD DATA AND PACKAGES #############################################################
-library(rjags)
-library(coda)
+library(R2jags)
 library(mvtnorm)
 library(data.table)
 # library(shinystan)
-library(reshape)
 
 source("load.try.data.R")
 source("custom.jags.R")
 
 args = commandArgs(trailingOnly=TRUE)
-# args = c("c1", "TRUE", "TRUE", "TRUE", "TRUE") # just for testing
+if(length(args) == 0){
+    args = c("c1", "TRUE", "TRUE", "TRUE", "TRUE", "na") # just for testing
+}
 print(args)
 
 ## DATA FORMATTING #############################################################
@@ -42,13 +42,9 @@ runs = list(
   hier.trait.pft.spec = as.logical(args[5])  
 )
 
-n.chains <-  1
-thin <- NULL; thin.n <- ifelse(is.null(thin),1,thin)
-n.iter <- 15000*thin.n
-n.update <- 20*thin.n 
-burnin <- 10000
-
-
+#thin <- NULL; thin.n <- ifelse(is.null(thin),1,thin)
+n.chains <- 5
+n.iter <- 5000
 
 ## UNIVARIATE: TRAIT ###########################################################
 
@@ -60,15 +56,14 @@ if(runs$uni.trait){
   print(Sys.time())
   
   data <- list(
-    obvs = DT$observed,
+    obvs = obvs,
     n_traits = n_traits,
     n_obvs = n_obvs)
   
-  inits = list(mu_trait = as.numeric(trait_means))
-  variable.names <- c("mu_trait")
+  inits = function() list(mu_trait = as.numeric(trait_means))
+  variable.names <- c("mu_trait", "tau_obvs")
   out <- custom.jags(model = model, data = data, inits = inits,
-                     n.chains = n.chains, burnin = burnin, 
-                     n.update = n.update, n.iter = n.iter, thin = thin, 
+                     n.chains = n.chains, n.iter = n.iter,
                      variable.names = variable.names)
   
   save(out, file = paste0("output/uni.trait",na,".",args[1],".Rdata"))
@@ -80,24 +75,24 @@ if(runs$uni.trait){
 
 if(runs$multi.trait){
   
+  n.iter <- 15000
   model = "models/multivariate.trait.txt"
   print("-------------------------")
   print(model)
   print(Sys.time())
   
   data <- list(
-    obvs = DT$observed,
+    obvs = obvs,
     n_traits = n_traits,
     n_obvs = n_obvs,
     mu0 = rep(0,n_traits), 
     Sigma0 = diag(.001,n_traits))
   
-  inits = list(mu_trait = as.numeric(trait_means))
-  variable.names <- c("mu_trait")
+  inits = function() list(mu_trait = as.numeric(trait_means))
+  variable.names <- c("mu_trait", "Sigma_trait")
   
   out <- custom.jags(model = model, data = data, inits = inits,
-                     n.chains = n.chains, burnin = burnin, 
-                     n.update = n.update, n.iter = n.iter, thin = thin, 
+                     n.chains = n.chains, n.iter = n.iter,
                      variable.names = variable.names)
   
   save(out, file = paste0("output/multi.trait",na,".",args[1],".Rdata"))
@@ -109,6 +104,7 @@ if(runs$multi.trait){
 
 # if(runs$hier.trait.pft){
 
+n.iter <- 30000
 model = "models/hierarchical.trait.pft.txt"
 print("-------------------------")
 print(model)
@@ -123,15 +119,18 @@ data <- list(
   n_obvs = n_obvs, 
   mu0 = rep(0,n_traits), 
   Sigma0 = diag(.001,n_traits),
-  Omega = diag(n_traits))
+  Omega = diag(0.001,n_traits))
 
-inits = list(mu_trait = as.numeric(trait_means),
-             mu_pft_trait = as.matrix(pft_means[,traits,with=F]))
-variable.names <- c("mu_trait","mu_pft_trait")
+trait_means_vec <- as.numeric(trait_means)
+pft_means_mat <- as.matrix(pft_means[,traits,with=F])
+
+inits = function() list(mu_trait = as.numeric(trait_means_vec),
+                        mu_pft_trait = as.matrix(pft_means_mat))
+variable.names <- c("mu_trait","Sigma_trait", 
+                    "mu_pft_trait", "Sigma_pfts")
 
 out <- custom.jags(model = model, data = data, inits = inits,
-                   n.chains = n.chains, burnin = burnin, 
-                   n.update = n.update, n.iter = n.iter, thin = thin, 
+                   n.chains = n.chains, n.iter = n.iter,
                    variable.names = variable.names)
 
 save(out, file = paste0("output/hier.trait.pft",na,".",args[1],".Rdata"))
@@ -143,6 +142,7 @@ print("Done with hierarchical: trait, pft")
 
 if(runs$hier.trait.pft.spec){
   
+  n.iter <- 60000
   model = "models/hierarchical.trait.pft.spec.txt"
   print("-------------------------")
   print(model)
@@ -162,15 +162,19 @@ if(runs$hier.trait.pft.spec){
     Sigma0 = diag(.001,n_traits),
     Omega = diag(n_traits))
   
-  inits = list(mu_trait = as.numeric(trait_means),
-               mu_pft_trait = as.matrix(pft_means[,traits,with=F]),
-               mu_spec_pft_trait = as.matrix(spec_means[,traits,with=F]))  
+trait_means_vec <- as.numeric(trait_means)
+pft_means_mat <- as.matrix(pft_means[,traits,with=F])
+species_means_mat <- as.matrix(spec_means[,traits,with=F])
+
+  inits = function() list(mu_trait = trait_means_vec,
+                          mu_pft_trait = pft_means_mat,
+                          mu_spec_pft_trait = species_means_mat)  
   
-  variable.names <- c("mu_trait","mu_pft_trait","mu_spec_pft_trait")
+  variable.names <- c("mu_trait","mu_pft_trait","mu_spec_pft_trait",
+                      "Sigma_trait", "Sigma_pfts", "Sigma_spec")
   
   out <- custom.jags(model = model, data = data, inits = inits,
-                     n.chains = n.chains, burnin = burnin, 
-                     n.update = n.update, n.iter = n.iter, thin = thin, 
+                     n.chains = n.chains, n.iter = n.iter,
                      variable.names = variable.names)
   
   save(out, file = paste0("output/hier.trait.pft.spec",na,".",args[1],".Rdata"))

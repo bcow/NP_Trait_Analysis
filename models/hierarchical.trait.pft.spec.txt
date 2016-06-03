@@ -3,7 +3,10 @@ model{
   # Model structure
   
   for(i in 1:n_obvs){
-    obvs[i,1:n_traits]~dmnorm(mu_spec_pft_trait[spec_obvs[i],], Sigma_spec[spec_obvs[i],,])
+    Y[i,1:n_traits]~dmnorm(mu_spec_pft_trait[spec_obvs[i],], Sigma_spec[spec_obvs[i],,])
+    for(j in 1:n_traits){
+      obvs[i,j] ~ dnorm(Y[i,j], 10000)
+    }
   }
   for(i in 1:n_species){
     mu_spec_pft_trait[i,1:n_traits]~dmnorm(mu_pft_trait[pft_spec[i],], Sigma_pfts[pft_spec[i],,])
