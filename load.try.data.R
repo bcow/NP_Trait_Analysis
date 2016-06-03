@@ -1,6 +1,8 @@
 # load.try.data
 library(data.table)
+try_full <- readRDS("data/try.data.rds")
 try_full <- data.table(readRDS("data/try.data.rds"))
+
 # Some na's in the table accidentally got changed to NaN, 
 # switch back so it doesn't confuse the model
 nan2na <- function(x){
@@ -18,7 +20,6 @@ try.tps.na <- try.tps.na[!is.na(try_full$pft)]
 
 # data with pfts and no missing values
 try.tps <- na.omit(try.tps.na)
-
 
 # try.na <- try_full[,.(log.LL, log.LMA, log.Nmass, log.Pmass, log.Rdmass)]
 # try.na <- try.na[!is.na(try_full$pft)]

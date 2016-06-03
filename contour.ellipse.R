@@ -7,6 +7,8 @@ require(gridExtra)
 load("output/mu_trait.outs.Rdata")
 #load("output/mu_pft.outs.Rdata")
 
+m <- max(as.numeric(lapply(outs, function(x) dim(x)[1])))
+
 
 a <- b <- length(traits)
 
@@ -25,7 +27,7 @@ for(N in 1:length(v1)){
   yname <- paste(unlist(strsplit(traits[v2[N]], "[.]"))[1:2],collapse =" ")
   
   # ellipses 
-  m <- max(as.numeric(lapply(outs, function(x) dim(x)[1])))
+
   o <- as.data.frame(matrix(NA,m,2*length(outs)))
   colnames(o) <- unlist(lapply(1:length(outs), function(i) c(paste0(names(outs)[i],".v",1), paste0(names(outs)[i],".v",2))))
   

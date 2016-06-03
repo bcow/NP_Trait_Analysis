@@ -15,15 +15,15 @@ load.try.mcmc <- function(model,traits,var){
     remove(out)
   }
   
-  if(length(files) > 1){
-    for(i in 2:length(files)){
-      load(files[i])
-      out.new <- as.data.frame(as.matrix(out))
-      out.df <- rbind(out.df, out.new[,grep(var, colnames(out.new))])
-      remove(out.new)
-    }
-  }
-  
+  # if(length(files) > 1){
+  #   for(i in 2:length(files)){
+  #     load(files[i])
+  #     out.new <- as.data.frame(as.matrix(out))
+  #     out.df <- rbind(out.df, out.new[,grep(var, colnames(out.new))])
+  #     remove(out.new)
+  #   }
+  # }
+
   
   ######### With NA's #########   
   
@@ -34,15 +34,15 @@ load.try.mcmc <- function(model,traits,var){
     out.na.df <- out.na.df[,grep(var, colnames(out.na.df))]
     remove(out)
   }
-
-  if(length(files_na) > 1){
-    for(i in 2:length(files_na)){
-      load(files_na[i])
-      out.na.new <- as.data.frame(as.matrix(out))
-      out.na.df <- rbind(out.na.df, out.na.new[,grep(var, colnames(out.na.new))])
-      remove(out.na.new)
-    }
-  }
+ 
+  # if(length(files_na) > 1){
+  #   for(i in 2:length(files_na)){
+  #     load(files_na[i])
+  #     out.na.new <- as.data.frame(as.matrix(out))
+  #     out.na.df <- rbind(out.na.df, out.na.new[,grep(var, colnames(out.na.new))])
+  #     remove(out.na.new)
+  #   }
+  # }
 
   #############################  
   
