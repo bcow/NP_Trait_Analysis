@@ -1,7 +1,6 @@
 # load.try.data
 library(data.table)
 try_full <- readRDS("data/try.data.rds")
-try_full <- data.table(readRDS("data/try.data.rds"))
 
 # Some na's in the table accidentally got changed to NaN, 
 # switch back so it doesn't confuse the model
@@ -14,13 +13,11 @@ try_full <- try_full[,lapply(.SD, nan2na)]
 traits <- c("log.LL", "log.LMA", "log.Nmass", "log.Pmass", "log.Rdmass")
 
 # data with pfts and missing values
-try.tps.na <-  try_full[,c(traits,"pft","AccSpeciesName"), with = F]
-colnames(try.tps.na) <- c(traits,"pft", "species")
-try.tps.na <- try.tps.na[!is.na(try_full$pft)]
+try.na <-  try_full[,c(traits,"pft.factor"), with = F]
+colnames(try.na) <- c(traits,"pft")
+try.na <- try.na[!is.na(try_full$pft)]
 
 # data with pfts and no missing values
-try.tps <- na.omit(try.tps.na)
+try <- na.omit(try.na)
 
-# try.na <- try_full[,.(log.LL, log.LMA, log.Nmass, log.Pmass, log.Rdmass)]
-# try.na <- try.na[!is.na(try_full$pft)]
-# try <- na.omit(try.na)
+
