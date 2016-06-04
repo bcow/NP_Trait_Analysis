@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #$ -l h_rt=48:00:00
-#$ -N try.run.multi
+#$ -N try.run.multi.na
 #$ -V
 #$ -j y
 #$ -pe omp 8 -q "geo*"

@@ -50,7 +50,7 @@ if(uni.group){
     DT <- DT.run[pft == pfts[i]]
     source("models/run.uni.R")
     if (!is.error(out)){
-        save(out, file = paste0("output/uni.trait",na,".pft.",i,".Rdata"))
+        save(out, file = sprintf("output/uni.trait%s.pft.%02.0f.Rdata", na, i))
     } else {
         warning(sprintf("Error running PFT %d. Skipping and moving on", pfts[i]))
     }
@@ -80,7 +80,7 @@ if(multi.group){
   for(i in 1:length(pfts)){
     DT <- DT.run[pft == pfts[i]]
     source("models/run.multi.R")
-    save(out, file = paste0("output/multi.trait",na,".pft.",i,".Rdata"))
+    save(out, file = sprintf("output/multi.trait%s.pft.%02.0f.Rdata", na, i))
     remove(DT)
     print(paste("Done!", pfts[i]))
   }
@@ -98,3 +98,10 @@ if(hier){
   remove(DT)
   print("Done!")
 }
+
+## PRINT WARNINGS ################################################################
+
+print("=================================")
+print("PRINT WARNINGS")
+
+warnings()
