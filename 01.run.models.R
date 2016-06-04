@@ -13,7 +13,7 @@ args = commandArgs(trailingOnly=TRUE)
 if(length(args) == 0){
   args = c("uni=FALSE", "uni.group=TRUE", 
            "multi=FALSE", "multi.group=TRUE", 
-           "hier=TRUE", "with.na=TRUE", 
+           "hier=TRUE", "with.na=FALSE", 
            "n.chains=3") # just for testing
 }
 print(args)
@@ -27,7 +27,7 @@ global.trait.means <- as.numeric(try.na[, lapply(.SD, mean, na.rm=TRUE),
 names(global.trait.means) <- traits
 
 na <- ifelse(with.na, ".na","") 
-DT.run <- get(paste0("try", na))[, pft := as.numeric(pft)]
+DT.run <- get(paste0("try", na))[,pft:=droplevels(pft)][, pft := as.numeric(pft)]
 pfts <- unique(DT.run[,pft])
 
 ## UNIVARIATE ##################################################################
@@ -36,7 +36,7 @@ if(uni){
   print("Start univariate model without grouping")
   DT <- DT.run
   source("models/run.uni.R")
-  save(out, file = paste0("output/uni.trait",na,".Rdata"))
+  save(out, file = sprintf("output/uni.trait%s.Rdata", na))
   remove(model,out)
   remove(DT)
   print("Done!")
@@ -49,7 +49,7 @@ if(uni.group){
     print(paste("Running PFT", pfts[i]))
     DT <- DT.run[pft == pfts[i]]
     source("models/run.uni.R")
-    if (!is.error(out)){
+    if (!all(is.error(out))){
         save(out, file = sprintf("output/uni.trait%s.pft.%02.0f.Rdata", na, i))
     } else {
         warning(sprintf("Error running PFT %d. Skipping and moving on", pfts[i]))
@@ -69,7 +69,7 @@ if(multi){
   print("Start multivariate model without grouping")
   DT <- DT.run
   source("models/run.multi.R")
-  save(out, file = paste0("output/multi.trait",na,".Rdata"))
+  save(out, file = sprintf("output/multi.trait%s.pft.%02.0f.Rdata", na, i))
   remove(model,out)
   remove(DT)
   print("Done!")
@@ -93,7 +93,7 @@ if(hier){
   print("Start hierarchical model")
   DT <- DT.run
   source("models/run.hier.R")
-  save(out, file = paste0("output/hier.trait.pft",na,".Rdata"))
+  save(out, file = sprintf("output/hier.trait.pft%s.Rdata",na))
   remove(model,out)
   remove(DT)
   print("Done!")
