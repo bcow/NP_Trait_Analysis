@@ -3,6 +3,7 @@
 obvs <- DT[,traits,with=FALSE]
 trait_means <- DT[, lapply(.SD, function(x) mean(x, na.rm = T)), 
                   .SDcols = traits]
+trait_means <- trait_means[,lapply(.SD, nan2na)]
 
 n_obvs=dim(obvs)[1] 
 n_traits = length(traits)
