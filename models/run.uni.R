@@ -1,9 +1,9 @@
 ## DATA FORMATTING #############################################################
 
 obvs <- DT[,traits,with=FALSE]
-trait_means <- DT[, lapply(.SD, function(x) mean(x, na.rm = T)), 
-                  .SDcols = traits]
-trait_means <- trait_means[,lapply(.SD, nan2na)]
+trait_means <- as.numeric(DT[, lapply(.SD, function(x) mean(x, na.rm = T)), 
+                          .SDcols = traits])
+trait_means <- replace.with.global(trait_means, global.trait.means)
 
 n_obvs=dim(obvs)[1] 
 n_traits = length(traits)
@@ -21,7 +21,7 @@ data <- list(
 n.iter <- 5000
 inits = function() list(mu_trait = as.numeric(trait_means))
 variable.names <- c("mu_trait", "tau_obvs")
-out <- custom.jags(model = model, data = data, inits = inits,
-                   n.chains = n.chains, n.iter = n.iter,
-                   variable.names = variable.names)
+out <- try(custom.jags(model = model, data = data, inits = inits,
+                       n.chains = n.chains, n.iter = n.iter,
+                       variable.names = variable.names))
 

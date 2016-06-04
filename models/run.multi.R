@@ -1,9 +1,9 @@
 ## DATA FORMATTING #############################################################
 
 obvs <- DT[,traits,with=FALSE]
-trait_means <- DT[, lapply(.SD, function(x) mean(x, na.rm = T)), 
-                  .SDcols = traits]
-trait_means <- trait_means[,lapply(.SD, nan2na)]
+trait_means <- as.numeric(DT[, lapply(.SD, function(x) mean(x, na.rm = T)), 
+                          .SDcols = traits][, lapply(.SD, nan2na)])
+trait_means <- replace.with.global(trait_means, global.trait.means)
 
 n_obvs=dim(obvs)[1] 
 n_traits = length(traits)
@@ -18,7 +18,7 @@ data <- list(
   n_traits = n_traits,
   n_obvs = n_obvs,
   mu0 = rep(0,n_traits), 
-  Sigma0 = diag(.001,n_traits))
+  Sigma0 = diag(0.001,n_traits))
 
 n.iter <- 15000
 inits = function() list(mu_trait = as.numeric(trait_means))
