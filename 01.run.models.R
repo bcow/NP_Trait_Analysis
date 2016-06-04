@@ -30,7 +30,7 @@ pfts <- levels(droplevels(DT.run[,pft]))
 if(uni){
   print("Start univariate model without grouping")
   DT <- DT.run
-  source("run.uni.R")
+  source("models/run.uni.R")
   save(out, file = paste0("output/uni.trait",na,".Rdata"))
   remove(model,out)
   remove(DT)
@@ -41,7 +41,7 @@ if(uni.group){
   print("Start univariate model with grouping")
   for(i in 1:length(pfts)){
     DT <- DT.run[pft == pfts[i]]
-    source("run.uni.R")
+    source("models/run.uni.R")
     save(out, file = paste0("output/uni.trait",na,".pft.",i,".Rdata"))
     remove(DT)
     print(paste("Done!", pfts[i]))
@@ -54,7 +54,7 @@ if(uni.group){
 if(multi){
   print("Start multivariate model without grouping")
   DT <- DT.run
-  source("run.multi.R")
+  source("models/run.multi.R")
   save(out, file = paste0("output/multi.trait",na,".Rdata"))
   remove(model,out)
   remove(DT)
@@ -65,7 +65,7 @@ if(multi.group){
   print("Start multivariate model with grouping")
   for(i in 1:length(pfts)){
     DT <- DT.run[pft == pfts[i]]
-    source("run.multi.R")
+    source("models/run.multi.R")
     save(out, file = paste0("output/multi.trait",na,".pft.",i,".Rdata"))
     remove(DT)
     print(paste("Done!", pfts[i]))
@@ -78,7 +78,7 @@ if(multi.group){
 if(hier){
   print("Start hierarchical model")
   DT <- DT.run
-  source("run.hier.R")
+  source("models/run.hier.R")
   save(out, file = paste0("output/hier.trait.pft",na,".Rdata"))
   remove(model,out)
   remove(DT)
