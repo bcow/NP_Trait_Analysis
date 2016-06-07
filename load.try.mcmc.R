@@ -1,58 +1,40 @@
 # load in the mcmc outputs
-
-load.try.mcmc <- function(model,traits,var){
-  
-  files <- dir("output/", pattern = paste0(model,".Rdata"), full.names = TRUE )
-  files_na <- dir("output/", pattern = paste0(model,".na.Rdata"), full.names = TRUE )
-  
-######### Without NA's ######### 
-  
-  if(length(files) > 0){
-    load(files[1])
-    out.mcmc <- as.mcmc(out)
-    out.df <- as.data.frame(as.matrix(out.mcmc))
-    out.df <- out.df[,grep(var, colnames(out.df))]
-    remove(out)
-  }
-  
-  # if(length(files) > 1){
-  #   for(i in 2:length(files)){
-  #     load(files[i])
-  #     out.new <- as.data.frame(as.matrix(out))
-  #     out.df <- rbind(out.df, out.new[,grep(var, colnames(out.new))])
-  #     remove(out.new)
-  #   }
-  # }
-
-  
-  ######### With NA's #########   
-  
-  if(length(files_na) > 0){
-    load(files_na[1])
-    out.na.mcmc <- as.mcmc(out)
-    out.na.df <- as.data.frame(as.matrix(out.na.mcmc))
-    out.na.df <- out.na.df[,grep(var, colnames(out.na.df))]
-    remove(out)
-  }
+load.try.mcmc <- function(models,v){
  
-  # if(length(files_na) > 1){
-  #   for(i in 2:length(files_na)){
-  #     load(files_na[i])
-  #     out.na.new <- as.data.frame(as.matrix(out))
-  #     out.na.df <- rbind(out.na.df, out.na.new[,grep(var, colnames(out.na.new))])
-  #     remove(out.na.new)
-  #   }
-  # }
-
-  #############################  
-  
-  vars <- c()
-  if(exists("out.mcmc")){
-    assign(x = paste(var,model,sep="."), value = out.df , envir = .GlobalEnv)
-    vars <- c(vars, paste(var,model,sep="."))}
-  if(exists("out.na.mcmc")){
-    assign(x = paste(var,model,"na",sep="."), value = out.na.df , envir = .GlobalEnv)
-    vars <- c(vars, paste(var,model,"na",sep="."))}
-  return(vars)
+  out.names <- c()
+   
+  for(m in 1:length(models)){
+    model <- models[m]
+    pooled <- dir(file.path("output",model), pattern = paste0(model,".Rdata"), full.names = TRUE)
+    grouped <- setdiff(dir(file.path("output",model), full.names = TRUE), pooled)
+    
+    # No grouping
+    if(length(pooled) == 1){
+      load(pooled)
+      out.pooled <- as.data.table(as.matrix(as.mcmc(out)))
+      out.pooled <- out.pooled[,grep(v,names(out.pooled)), with=F]
+      
+      name.pooled <- paste0(model,".pooled")
+      assign(name.pooled, out.pooled, envir = .GlobalEnv)
+      remove(out)
+      
+      out.names <- c(out.names, name.pooled)
+    }
+    # Grouping
+    
+    if(length(grouped) > 0){
+      for(i in 1:length(grouped)){
+        load(grouped[i])
+        out.grouped <- as.data.table(as.matrix(as.mcmc(out)))
+        out.grouped <- out.grouped[,grep(v,names(out.grouped)), with=F]
+        
+        name.grouped <- paste0(model,".pft.",tail(unlist(strsplit(grouped[i],"[.]")),2)[1])
+        assign(name.grouped, out.grouped, envir = .GlobalEnv)
+        remove(out)
+        
+        out.names <- c(out.names, name.grouped)
+      }
+    }
+  }
+  return(out.names)
 }
-
