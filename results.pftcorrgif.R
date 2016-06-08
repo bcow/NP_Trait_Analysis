@@ -5,9 +5,8 @@ source("00.common.R")
 load("output/hier.trait.pft.na.Rdata") # Object name is "out"
 
 # Get the covariance matrices for each PFT
-cov.inv.all <- out$BUGSoutput$mean$Sigma_pfts
-cov.all <- solveArray(cov.inv.all)
-cor.all <- cov2corArray(cov.all)
+cov.all <- out$BUGSoutput$mean$Sigma_pfts
+cor.all <- array2DApply(cov.all, cov2cor)
 
 dimnames(cor.all)[[1]] <- pft.names
 dimnames(cor.all)[[2]] <- dimnames(cor.all)[[3]] <- traits

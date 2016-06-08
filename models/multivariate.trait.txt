@@ -3,7 +3,7 @@ model{
   # Model structure
 
   for(i in 1:n_obvs){
-    Y[i,1:n_traits]~dmnorm(mu_trait[], Sigma_trait[,])
+    Y[i, 1:n_traits] ~ dmnorm(mu_trait, invSigma_trait)
     for(j in 1:n_traits){
       obvs[i,j] ~ dnorm(Y[i,j], 10000)
     }
@@ -11,7 +11,8 @@ model{
   
   # Priors
   
-  mu_trait[1:n_traits]~dmnorm(mu0[], Sigma0[,])
-  Sigma_trait[1:n_traits,1:n_traits]~dwish(Sigma0[,], n_traits)
+  mu_trait ~ dmnorm(mu0, Omega)
+  invSigma_trait ~ dwish(Omega, n_traits - 1)
+  Sigma_trait <- inverse(invSigma_trait)
   
 }
