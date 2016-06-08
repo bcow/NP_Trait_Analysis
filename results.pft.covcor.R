@@ -35,15 +35,19 @@ summarizeSampleMatrix <- function(cov.all.samples, dims){
     return(cov.dat)
 }
 
-load("output/hier.trait.pft.na.Rdata") # Object name is "out"
 print("Loading covariance matrix...")
-cov.all <- out$BUGSoutput$sims.list$Sigma_pfts
+load("output/hier.trait.pft.na.Rdata") # Object name is "out"
+cov.all <- array3Dapply(out$BUGSoutput$sims.list$Sigma_pfts, solve)
 print("Calculating sample correlation matrices...")
 cor.all <- array3Dapply(cov.all, cov2cor)
 print("Summarizing covariance matrices...")
 cov.dat <- summarizeSampleMatrix(cov.all, 2:4)
 print("Summarizing correlation matrices...")
-cor.dat <- summarizeSampleMatrix(cor.all, 2:4)
+cor.dat <- summarizeSampleMatrix(cor.all, 2:4) %>%
+    separate(Function, into = c("growth_form", "ps_type", "leaf_type", "phenology"),
+             sep = "_", extra = "drop", remove=FALSE) %>%
+    as.data.table()
+cor.dat[is.na(ps_type), c("ps_type", "leaf_type", "phenology") := Function]
 
 cov.plt <- ggplot(cov.dat) + 
     aes(x=Function, y=q500, ymin=q025, ymax=q975, color=Function) +
@@ -67,6 +71,31 @@ dev.off()
 print("Generating correlation plot...")
 mypng("figures/pft.cor.plot.png")
 plot(cov.plt %+% cor.dat + ylab("Correlation"))
+dev.off()
+
+# Plot the ANOVA
+print("Generating ANOVA plot...")
+trait.pairs <- unique(cor.dat[, Trait])
+cor.list <- list()
+rnames <- c("Biome", "ps_type", "growth_form", "leaf_type", "phenology", "Residuals")
+for(trait in trait.pairs){
+    cor.list[[trait]] <- lm(Mean ~ Biome + ps_type + growth_form + ps_type + leaf_type + phenology,
+                cor.dat, subset = Trait == trait) %>% 
+                anova %>% select(2)
+}
+
+cor.anova <- do.call(cbind, cor.list)
+colnames(cor.anova) <- trait.pairs
+cor.plot.dat <- cor.anova %>% add_rownames(var = "Type") %>%
+    gather(Trait, Value, -Type) %>%
+    as.data.table()
+
+cor.plot.dat[, Value := Value / sum(Value), by=Trait]
+cor.anova.plot <- ggplot(cor.plot.dat) + aes(x = Trait, y = Value, fill = Type) + 
+    geom_bar(stat="identity")
+
+mypng("figures/pft.cor.anova.png")
+plot(cor.anova.plot)
 dev.off()
 
 print("All done!")
