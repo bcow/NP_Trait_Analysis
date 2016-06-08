@@ -8,7 +8,7 @@ library(mcmcplots)
 source("load.try.data.R")
 source("load.try.mcmc.R")
 
-## MU_TRAIT #################################################################### 
+## TRAIT MEANS - global and by pft #############################################
 
 models = dir("output/")
 v = "mu_trait"
@@ -20,20 +20,10 @@ for(n in out.names){
   names(outs[[n]]) <- traits
 }
 paste(out.names)
-# mus <- as.data.frame(matrix(NA, length(out.names)+1, length(traits)))
-# mus[1,] <- colMeans(try[,traits,with=F])
-# for(i in 1:length(out.names)){
-#   for(j in 1:length(traits)){
-#     mus[i+1,j] <- mean(get(out.names[i])[,traits[j],with=F][[1]])
-#   }
-# }
-# colnames(mus) <- traits
-# rownames(mus) <- c("Data",out.names)
-# print(mus)
 
-# iter <- dim(outs[[1]])[1]
+out.trait.means <- outs
 
-save(outs, traits, file = paste0('output/',v,'.outs.Rdata'))
+save(out.trait.means, traits, file = 'output/out.trait.means.Rdata')
 eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
 
 ## MU_PFT #################################################################### 
@@ -57,8 +47,9 @@ for(n in out.names){
   names(outs[[n]]) <- cname
 }
 
+outs.mu_pft <- outs
 
-save(outs, traits, file = paste0('output/',v,'.outs.Rdata'))
+save(outs.mu_pft, traits, file = paste0('output/',v,'.outs.Rdata'))
 eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
 
 ### SIGMAs ##################################################################### 
@@ -72,9 +63,9 @@ for(n in out.names){
   outs[[n]] = get(n)
 }
 names(outs)
+out.Sigma <- outs
 
-
-save(outs, traits, file = paste0('output/',v,'.outs.Rdata'))
+save(out.Sigma, traits, file = paste0('output/',v,'.outs.Rdata'))
 eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
 
 ### MU_PFT_TRAIT ###############################################################
