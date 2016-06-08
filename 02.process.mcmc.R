@@ -55,7 +55,7 @@ eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
 ### SIGMAs ##################################################################### 
 
 models = dir("output/")
-v = "Sigma"
+v = "Sigma_trait"
 out.names <- load.try.mcmc(models, v)
 
 outs <- list()
