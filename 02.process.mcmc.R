@@ -45,6 +45,7 @@ eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
 ### SIGMA pft ################################################################
 
 models = dir("output/")
+
 v = "Sigma_pfts"
 out.names <- load.try.mcmc(models, v)
 
