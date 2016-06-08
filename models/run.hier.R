@@ -28,7 +28,7 @@ data <- list(
   n_obvs = n_obvs, 
   mu0 = rep(0,n_traits), 
   Sigma0 = diag(0.001,n_traits),
-  Omega = diag(0.001,n_traits))
+  scale = diag(n_traits)*n_traits)
 
 n.iter <- 30000
 inits = function() list(mu_trait = as.numeric(trait_means),
