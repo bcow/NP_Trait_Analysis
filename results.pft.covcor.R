@@ -4,16 +4,6 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 
-applySampleMatrix <- function(samples, func){
-    out <- array(NA, dim(samples))
-    for(i in 1:dim(out)[1]){
-        for(j in 1:dim(out)[2]){
-            out[i,j,,] <- func(samples[i,j,,])
-        }
-    }
-    return(out)
-}
-
 summarizeSampleMatrix <- function(cov.all.samples, dims){
     # Calculate summary statistics across samples
     cov.all.list <- list(Mean = apply(cov.all.samples, dims, mean),
@@ -35,7 +25,7 @@ summarizeSampleMatrix <- function(cov.all.samples, dims){
 
     cov.dat <- lapply(cov.all.list, columnize) %>% 
         do.call(cbind, .) %>%
-        cbind(., "PFT" = rownames(.)) %>%
+        add_rownames(var = "PFT") %>%
         gather(Stat.Trait, Value, -PFT) %>%
         separate(Stat.Trait, into=c("Stat", "Trait"), sep="\\.") %>%
         spread(Stat, Value) %>%
@@ -46,10 +36,10 @@ summarizeSampleMatrix <- function(cov.all.samples, dims){
 }
 
 load("output/hier.trait.pft.na.Rdata") # Object name is "out"
-print("Inverting sample precision matrices...")
-cov.all <- applySampleMatrix(out$BUGSoutput$sims.list$Sigma_pfts, solve)
+print("Loading covariance matrix...")
+cov.all <- out$BUGSoutput$sims.list$Sigma_pfts
 print("Calculating sample correlation matrices...")
-cor.all <- applySampleMatrix(cov.all, cov2cor)
+cor.all <- array3Dapply(cov.all, cov2cor)
 print("Summarizing covariance matrices...")
 cov.dat <- summarizeSampleMatrix(cov.all, 2:4)
 print("Summarizing correlation matrices...")

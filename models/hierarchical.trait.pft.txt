@@ -3,23 +3,25 @@ model{
   # Model structure
  
   for(i in 1:n_obvs){
-    Y[i,1:n_traits]~dmnorm(mu_pft_trait[pft_obvs[i],], Sigma_pfts[pft_obvs[i],,])
+    Y[i, 1:n_traits] ~ dmnorm(mu_pft_trait[pft_obvs[i],], invSigma_pfts[pft_obvs[i],,])
     for(j in 1:n_traits){
       obvs[i,j] ~ dnorm(Y[i,j], 10000)
     }
   }
   for(i in 1:n_pfts){
-    mu_pft_trait[i,1:n_traits]~dmnorm(mu_trait[],Sigma_trait[,])
+    mu_pft_trait[i, 1:n_traits] ~ dmnorm(mu_trait, invSigma_trait)
   }
 
   # Priors
 
   mu_trait[1:n_traits]~dmnorm(mu0[], Sigma0[,])
   
-  Sigma_trait[1:n_traits,1:n_traits]~dwish(Omega[,],n_traits)
+  invSigma_trait ~ dwish(Omega, n_traits - 1)
+  Sigma_trait <- inverse(invSigma_trait)
   
   for(i in 1:n_pfts){
-    Sigma_pfts[i,1:n_traits,1:n_traits]~dwish(Omega[,],n_traits)
+    invSigma_pft[i, 1:n_traits, 1:n_traits] ~ dwish(Omega, n_traits)
+    Sigma_pft[i, 1:n_traits, 1:n_traits] <- inverse(invSigma_pfts[i,1:n_traits,1:n_traits])
   }
   
 }

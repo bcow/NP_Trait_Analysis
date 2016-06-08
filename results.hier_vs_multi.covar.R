@@ -5,7 +5,7 @@ source("00.common.R")
 
 plot_covar <- function(fname, ...){
     load(fname)                        # Object name is "out"
-    cov.global <- solve(out$BUGSoutput$mean$Sigma_trait)
+    cov.global <- out$BUGSoutput$mean$Sigma_trait
     rownames(cov.global) <- colnames(cov.global) <- traits
     cor.global <- cov2cor(cov.global)
     plt <- corrplot.mixed(cor.global, lower = "ellipse", upper = "number",

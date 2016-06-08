@@ -34,7 +34,7 @@ n.iter <- 30000
 inits = function() list(mu_trait = as.numeric(trait_means),
                         mu_pft_trait = as.matrix(pft_means))
 variable.names <- c("mu_trait","Sigma_trait", 
-                    "mu_pft_trait", "Sigma_pfts")
+                    "mu_pft_trait", "Sigma_pft")
 
 out <- custom.jags(model = model, data = data, inits = inits,
                    n.chains = n.chains, n.iter = n.iter,

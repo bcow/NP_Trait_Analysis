@@ -18,15 +18,22 @@ convert.rownames <- function(dat){
     return(dat)
 }
 
-arrayApply <- function(arr, func, ...){
+array2DApply <- function(arr, func, ...){
     arr.dim <- dim(arr)
     out <- array(NA, arr.dim)
     for(i in 1:arr.dim[1]) out[i,,] <- func(arr[i,,], ...)
     return(out)
 }
 
-solveArray <- function(arr) arrayApply(arr, solve)
-cov2corArray <- function(arr) arrayApply(arr, cov2cor)
+array3Dapply <- function(arr, func, ...){
+    out <- array(NA, dim(arr))
+    for(i in 1:dim(out)[1]){
+        for(j in 1:dim(out)[2]){
+            out[i,j,,] <- func(arr[i,j,,], ...)
+        }
+    }
+    return(out)
+}
 
 try.pfts <- readRDS("data/try.pft.table.rds")
 pft.factor <- try.pfts$pft.factor
