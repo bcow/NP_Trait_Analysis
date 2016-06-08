@@ -8,7 +8,7 @@ library(mcmcplots)
 source("load.try.data.R")
 source("load.try.mcmc.R")
 
-## MU_TRAIT #################################################################### 
+## TRAIT MEANS - global and by pft #############################################
 
 models = dir("output/")
 v = "mu_trait"
@@ -20,51 +20,16 @@ for(n in out.names){
   names(outs[[n]]) <- traits
 }
 paste(out.names)
-# mus <- as.data.frame(matrix(NA, length(out.names)+1, length(traits)))
-# mus[1,] <- colMeans(try[,traits,with=F])
-# for(i in 1:length(out.names)){
-#   for(j in 1:length(traits)){
-#     mus[i+1,j] <- mean(get(out.names[i])[,traits[j],with=F][[1]])
-#   }
-# }
-# colnames(mus) <- traits
-# rownames(mus) <- c("Data",out.names)
-# print(mus)
 
-# iter <- dim(outs[[1]])[1]
+out.trait.means <- outs
 
-save(outs, traits, file = paste0('output/',v,'.outs.Rdata'))
+save(out.trait.means, traits, file = 'output/out.trait.means.Rdata')
 eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
 
-## MU_PFT #################################################################### 
-
-models = dir("output/")[grep(dir("output/"), pattern="hier")]
-v = "mu_pft"
-out.names <- load.try.mcmc(models,v)
-
-cname <- c()
-for(t in traits){
-  cname <- c(cname,paste(t,"pft", 1:(dim(outs[[1]])[2]/length(traits)), sep = "."))
-}
-
-outs <- list()
-for(n in out.names){
-  outs[[n]] = get(n)
-  cname <- c()
-  for(t in traits){
-    cname <- c(cname,paste(t,"pft", 1:(dim(outs[[n]])[2]/length(traits)), sep = "."))
-  }
-  names(outs[[n]]) <- cname
-}
-
-
-save(outs, traits, file = paste0('output/',v,'.outs.Rdata'))
-eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
-
-### SIGMAs ##################################################################### 
+### SIGMA trait ################################################################
 
 models = dir("output/")
-v = "Sigma"
+v = "Sigma_trait"
 out.names <- load.try.mcmc(models, v)
 
 outs <- list()
@@ -72,15 +37,16 @@ for(n in out.names){
   outs[[n]] = get(n)
 }
 names(outs)
+out.Sigma.trait <- outs
 
-
-save(outs, traits, file = paste0('output/',v,'.outs.Rdata'))
+save(out.Sigma.trait, traits, file = paste0('output/',v,'.outs.Rdata'))
 eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
 
-### MU_PFT_TRAIT ###############################################################
+### SIGMA pft ################################################################
 
-models = c("hier.trait.pft","hier.trait.pft.na")
-v = "mu_pft_trait"
+models = dir("output/")
+
+v = "Sigma_pfts"
 out.names <- load.try.mcmc(models, v)
 
 outs <- list()
@@ -88,7 +54,8 @@ for(n in out.names){
   outs[[n]] = get(n)
 }
 names(outs)
+out.Sigma.pft <- outs
 
-
-save(outs, traits, file = paste0('output/',v,'.outs.Rdata'))
+save(out.Sigma.pft, traits, file = paste0('output/',v,'.outs.Rdata'))
 eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
+

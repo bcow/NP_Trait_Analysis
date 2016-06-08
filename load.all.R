@@ -3,7 +3,7 @@ load.all.mcmc <- function(nas = TRUE){
     outdir <- "output"
     na.pattern <- ".na."
     if(nas){
-        files <- dir(outdir, na.pattern)
+        files <- dir(outdir, na.pattern, recursive = T)
     } else {
         files <- dir(outdir)
         files <- files[!grepl(na.pattern, files)]
