@@ -75,7 +75,6 @@ for(N in 1:length(v1)){
     }
     colnames(Sigma_trait) <- rownames(Sigma_trait)<-traits
     S <- Sigma_trait[c(v1[N],v2[N]),c(v1[N],v2[N])]
-    S <- solve(S)
     
     ###
     eigVal  <- eigen(S)$values

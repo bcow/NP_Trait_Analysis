@@ -20,7 +20,7 @@ data <- list(
 
 n.iter <- 5000
 inits = function() list(mu_trait = as.numeric(trait_means))
-variable.names <- c("mu_trait", "tau_obvs")
+variable.names <- c("mu_trait", "tau_obvs", "sigma2_obvs")
 out <- try(custom.jags(model = model, data = data, inits = inits,
                        n.chains = n.chains, n.iter = n.iter,
                        variable.names = variable.names))
