@@ -21,7 +21,7 @@ model{
   
   for(i in 1:n_pfts){
     invSigma_pfts[i, 1:n_traits, 1:n_traits] ~ dwish(scale, n_traits)
-    Sigma_pfts[i, 1:n_traits, 1:n_traits] <- inverse(invSigma_pfts[i,1:n_traits,1:n_traits])
+    Sigma_pft[i, 1:n_traits, 1:n_traits] <- inverse(invSigma_pfts[i,1:n_traits,1:n_traits])
   }
   
 }

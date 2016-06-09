@@ -36,7 +36,7 @@ if(uni){
   print("Start univariate model without grouping")
   DT <- DT.run
   source("models/run.uni.R")
-  save(out, file = sprintf("output/uni.trait%s.Rdata", na))
+  save(out, file = sprintf("output/uni.trait%s/uni.trait%s.Rdata", na, na))
   remove(model,out)
   remove(DT)
   print("Done!")
@@ -50,7 +50,7 @@ if(uni.group){
     DT <- DT.run[pft == pfts[i]]
     source("models/run.uni.R")
     if (!all(is.error(out))){
-        save(out, file = sprintf("output/uni.trait%s.pft.%02.0f.Rdata", na, i))
+        save(out, file = sprintf("output/uni.trait%s/uni.trait%s.pft.%02.0f.Rdata", na, na, i))
     } else {
         warning(sprintf("Error running PFT %d. Skipping and moving on", pfts[i]))
     }
@@ -69,7 +69,7 @@ if(multi){
   print("Start multivariate model without grouping")
   DT <- DT.run
   source("models/run.multi.R")
-  save(out, file = sprintf("output/multi.trait%s.pft.%02.0f.Rdata", na, i))
+  save(out, file = sprintf("output/multi.trait%s/multi.trait%s.Rdata", na, na, i))
   remove(model,out)
   remove(DT)
   print("Done!")
@@ -80,7 +80,7 @@ if(multi.group){
   for(i in 1:length(pfts)){
     DT <- DT.run[pft == pfts[i]]
     source("models/run.multi.R")
-    save(out, file = sprintf("output/multi.trait%s.pft.%02.0f.Rdata", na, i))
+    save(out, file = sprintf("output/multi.trait%s/multi.trait%s.pft.%02.0f.Rdata", na, na, i))
     remove(DT)
     print(paste("Done!", pfts[i]))
   }
@@ -93,7 +93,7 @@ if(hier){
   print("Start hierarchical model")
   DT <- DT.run
   source("models/run.hier.R")
-  save(out, file = sprintf("output/hier.trait.pft%s.Rdata",na))
+  save(out, file = sprintf("output/hier.trait.pft%s/hier.trait.pft%s.Rdata",na, na))
   remove(model,out)
   remove(DT)
   print("Done!")
