@@ -40,3 +40,26 @@ pft.factor <- try.pfts$pft.factor
 pft.names <- levels(pft.factor)
 pft.names[pft.names == "CAM"] <- "arid_CAM"
 npft <- length(pft.names)
+
+
+# Generate biome colors for plots
+generate.colors <- function(models){
+  
+  library(RColorBrewer)
+  require(data.table)
+  
+  pft.table <- readRDS("data/try.pft.table.rds")
+  pft.biome <- pft.table[,pft.num := sprintf("%02.f",as.numeric(pft.factor))][,list(biome = unique(biome)),pft.num][,biome.num := as.numeric(as.factor(biome))][1:35];setnames(pft.biome,"biome","Biome")
+  
+  pal <- brewer.pal(length(unique(pft.biome[,Biome])),"Set1")
+  
+  pft.biome <- rbind(pft.biome, data.table(pft.num = "global", Biome = "global", biome.num = 0))
+  
+  
+  color.dt <- data.table(Model = unique(models))[,pft.num := unlist(lapply(Model, function(x) tail(unlist(strsplit(x,"[.]")),1)))]
+  color.dt <- merge(color.dt,pft.biome,by = "pft.num", all.x = T)[,Color:= unlist(lapply(biome.num, function(x) ifelse(x == 0,"black", pal[x])))]
+  
+  return(color.dt[,.(Model,Biome,Color,pft.num)])
+}
+
+
