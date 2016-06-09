@@ -10,7 +10,10 @@ source("load.try.mcmc.R")
 
 ## TRAIT MEANS - global and by pft #############################################
 
+
 models = dir("output/")
+models = models[grep("na",models)]
+
 v = "mu_trait"
 out.names <- load.try.mcmc(models, v)
 
@@ -29,6 +32,8 @@ eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
 ### SIGMA trait ################################################################
 
 models = dir("output/")
+models = models[grep("na",models)]
+
 v = "Sigma_trait"
 out.names <- load.try.mcmc(models, v)
 
@@ -44,9 +49,7 @@ eval(parse(text = paste0("remove(",paste(out.names,collapse = ","),")")))
 
 ### SIGMA pft ################################################################
 
-models = dir("output/")
-
-v = "Sigma_pfts"
+v = "Sigma_pft"
 out.names <- load.try.mcmc(models, v)
 
 outs <- list()
