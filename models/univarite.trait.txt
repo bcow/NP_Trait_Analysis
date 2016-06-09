@@ -11,8 +11,8 @@ model{
   # Priors
   
   for(j in 1:n_traits){
-    mu_trait[j] ~ dnorm(0, 0.005)
-    tau_obvs[j] ~ dgamma(0.005, 0.005)
+    mu_trait[j] ~ dnorm(0, 0.001)
+    tau_obvs[j] ~ dgamma(scale,rate) 
     sigma2_obvs[j] <- 1/tau_obvs[j]
   }
 

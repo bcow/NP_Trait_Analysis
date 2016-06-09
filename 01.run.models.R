@@ -11,6 +11,22 @@ source("custom.jags.R")
 
 if(!dir.exists("output")) dir.create("output")
 
+# Defining Gamma & Wishart parameters here so we can experiment
+# See test.wishart.R for more.
+# dgamma(scale.g,rate)
+# dwish(scale.w,df)
+
+n_trait = length(traits)
+n = .1
+scale.w = diag(n,n_traits) 
+df = n_traits
+mean =n*df
+
+# works for univariate when n=1,.1,.01
+scale.g = mean/2 
+rate = 1/2      
+
+
 args = commandArgs(trailingOnly=TRUE)
 if(length(args) == 0){
   args = c("uni=FALSE", "uni.group=TRUE", 
@@ -41,8 +57,7 @@ if(uni){
   DT <- DT.run
   source("models/run.uni.R")
   save(out, file = sprintf("%s/uni.trait%s.Rdata",dir, na))
-  remove(model,out)
-  remove(DT)
+  remove(model,out,DT)
   print("Done!")
 }
 
@@ -57,15 +72,16 @@ if(uni.group){
     source("models/run.uni.R")
     if (!all(is.error(out))){
         save(out, file = sprintf("%s/uni.trait%s.pft.%02.0f.Rdata",dir, na, i))
+      remove(out)
     } else {
         warning(sprintf("Error running PFT %d. Skipping and moving on", pfts[i]))
     }
-    remove(DT)
     print(paste("Done!", pfts[i]))
     if(length(errors) != 0){
         warning(paste("Errors in the following models:", errors, collapse=" "))
     }
   }
+  remove(model,DT)
   print("All Done!")
 }
 
@@ -78,8 +94,7 @@ if(multi){
   DT <- DT.run
   source("models/run.multi.R")
   save(out, file = sprintf("%s/multi.trait%s.Rdata",dir, na, i))
-  remove(model,out)
-  remove(DT)
+  remove(model,out,DT)
   print("Done!")
 }
 
@@ -91,9 +106,10 @@ if(multi.group){
     DT <- DT.run[pft == pfts[i]]
     source("models/run.multi.R")
     save(out, file = sprintf("%s/multi.trait%s.pft.%02.0f.Rdata",dir, na, i))
-    remove(DT)
+    remove(out,DT)
     print(paste("Done!", pfts[i]))
   }
+  remove(model)
   print("All Done!")
 }
 
@@ -106,8 +122,7 @@ if(hier){
   DT <- DT.run
   source("models/run.hier.R")
   save(out, file = sprintf("%s/hier.trait.pft%s.Rdata",dir,na))
-  remove(model,out)
-  remove(DT)
+  remove(model,out,DT)
   print("Done!")
 }
 

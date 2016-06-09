@@ -16,7 +16,10 @@ print(Sys.time())
 data <- list(
   obvs = obvs,
   n_traits = n_traits,
-  n_obvs = n_obvs)
+  n_obvs = n_obvs,
+  scale = scale.g,
+  rate = rate # scale/rate = n
+  )
 
 n.iter <- 5000
 inits = function() list(mu_trait = as.numeric(trait_means))
