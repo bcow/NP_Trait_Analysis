@@ -35,15 +35,21 @@ summarizeSampleMatrix <- function(cov.all.samples, dims){
     return(cov.dat)
 }
 
-load("output/hier.trait.pft.na.Rdata") # Object name is "out"
 print("Loading covariance matrix...")
-cov.all <- out$BUGSoutput$sims.list$Sigma_pfts
+load("output/hier.trait.pft.na/hier.trait.pft.na.Rdata") # Object name is "out"
+cov.all <- array3Dapply(out$BUGSoutput$sims.list$Sigma_pft, solve)
 print("Calculating sample correlation matrices...")
 cor.all <- array3Dapply(cov.all, cov2cor)
 print("Summarizing covariance matrices...")
 cov.dat <- summarizeSampleMatrix(cov.all, 2:4)
 print("Summarizing correlation matrices...")
-cor.dat <- summarizeSampleMatrix(cor.all, 2:4)
+cor.dat <- summarizeSampleMatrix(cor.all, 2:4) %>%
+    separate(Function, into = c("growth_form", "ps_type", "leaf_type", "phenology"),
+             sep = "_", extra = "drop", remove=FALSE) %>%
+    as.data.table()
+cor.dat[is.na(ps_type), c("ps_type", "leaf_type", "phenology") := Function]
+
+##### Facet Grid Correlation Plot ##############################################
 
 cov.plt <- ggplot(cov.dat) + 
     aes(x=Function, y=q500, ymin=q025, ymax=q975, color=Function) +
@@ -69,5 +75,76 @@ mypng("figures/pft.cor.plot.png")
 plot(cov.plt %+% cor.dat + ylab("Correlation"))
 dev.off()
 
-print("All done!")
 
+##### Stacked Correlation Plot #################################################
+
+# playing with different colors
+biome.colors <- brewer.pal(length(unique(cor.dat$Biome)),"Set1")  
+names(biome.colors) <- unique(cor.dat$Biome)
+ps_type.colors <- brewer.pal(length(unique(cor.dat$ps_type)),"Set2")  
+names(ps.type.colors) <- unique(cor.dat$ps_type)
+leaf_type.colors <- brewer.pal(length(unique(cor.dat$leaf_type)),"Set3")  
+names(leaf_type.colors) <- unique(cor.dat$leaf_type)
+growth_form.colors <- brewer.pal(length(unique(cor.dat$growth_form)),"Dark2")  
+names(growth_form.colors) <- unique(cor.dat$growth_form)
+Function.colors <- brewer.pal(length(unique(cor.dat$Function)),"Accent")  
+names(Function.colors) <- unique(cor.dat$Function)
+
+for(i in 1:length(trait.pairs)){
+  dat <- filter(cor.dat, Trait == trait.pairs[i])
+  # ggplot(dat) + geom_density(aes(Mean, colour=Biome))
+  # ggplot(dat) + geom_histogram()
+  # ggplot(dat, aes(Mean, colour=Biome)) + geom_density()
+  # ggplot(dat, aes(Mean, fill = Biome)) + geom_histogram(binwidth = .06)
+  p <- ggplot(dat, aes(x=Mean, y=..density..)) + 
+    geom_density(aes(fill=Function), position="stack") +
+    scale_fill_manual(values=Function.colors) + labs(title = trait.pairs[i]) + 
+    theme(legend.position="none")
+  assign(paste0("p",i), p)
+}
+r <- rectGrob(gp=gpar(fill="white"))
+p <- arrangeGrob(p1, r, r, r, p2, p5, r, r, p3, p6, p8,r, p4, p7, p9, p10)
+g <- ggplotGrob(p1 + theme(legend.position="right"))$grobs
+legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+lheight <- sum(legend$height)
+lwidth <- sum(legend$width)
+png(filename = sprintf("figures/stacked.cor.Function.png"), height = 800, width=1100)
+grid.newpage() 
+grid.draw(arrangeGrob(p,legend,ncol = 2, 
+                      widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+dev.off()
+
+##### Plot the ANOVA ###########################################################
+
+print("Generating ANOVA plot...")
+trait.pairs <- unique(cor.dat[, Trait])
+cor.list <- list()
+rnames <- c("Biome", "ps_type", "growth_form", "leaf_type", "phenology", "Residuals")
+for(trait in trait.pairs){
+    cor.list[[trait]] <- lm(Mean ~ Biome + ps_type + growth_form + ps_type + leaf_type + phenology,
+                cor.dat, subset = Trait == trait) %>% 
+                anova %>% select(2)
+}
+
+cor.anova <- do.call(cbind, cor.list)
+colnames(cor.anova) <- trait.pairs
+cor.plot.dat <- cor.anova %>% add_rownames(var = "Type") %>%
+    gather(Trait, Value, -Type) %>%
+    as.data.table()
+
+# as per Mike's request
+# cor.plot.dat[, Value := Value / sum(Value), by=Trait]
+
+Type.colors <- c(brewer.pal(5, "Spectral"), "grey")
+names(Type.colors) <- rnames
+  
+cor.anova.plot <- ggplot(cor.plot.dat) + 
+  aes(x = Trait, y = Value, fill = Type) + 
+  geom_bar(stat="identity") + 
+  scale_fill_manual(values = Type.colors) 
+
+mypng("figures/pft.cor.anova.png")
+plot(cor.anova.plot)
+dev.off()
+
+print("All done!")
