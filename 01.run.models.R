@@ -9,11 +9,13 @@ source("00.common.R")
 source("load.try.data.R")
 source("custom.jags.R")
 
+if(!dir.exists("output")) dir.create("output")
+
 args = commandArgs(trailingOnly=TRUE)
 if(length(args) == 0){
   args = c("uni=FALSE", "uni.group=TRUE", 
            "multi=FALSE", "multi.group=TRUE", 
-           "hier=TRUE", "with.na=FALSE", 
+           "hier=TRUE", "with.na=TRUE", 
            "n.chains=3") # just for testing
 }
 print(args)
@@ -34,23 +36,27 @@ pfts <- unique(DT.run[,pft])
 
 if(uni){
   print("Start univariate model without grouping")
+  dir <- sprintf("output/uni.trait%s",na)
+  if(!dir.exists(dir)) dir.create(dir)
   DT <- DT.run
   source("models/run.uni.R")
-  save(out, file = sprintf("output/uni.trait%s/uni.trait%s.Rdata", na, na))
+  save(out, file = sprintf("%s/uni.trait%s.Rdata",dir, na))
   remove(model,out)
   remove(DT)
   print("Done!")
 }
 
 if(uni.group){
-  print("Start univariate model with grouping")
+  print("Start univariate model with grouping") 
+  dir <- sprintf("output/uni.trait%s",na)
+  if(!dir.exists(dir)) dir.create(dir)
   errors <- numeric(0)
   for(i in 1:length(pfts)){
     print(paste("Running PFT", pfts[i]))
     DT <- DT.run[pft == pfts[i]]
     source("models/run.uni.R")
     if (!all(is.error(out))){
-        save(out, file = sprintf("output/uni.trait%s/uni.trait%s.pft.%02.0f.Rdata", na, na, i))
+        save(out, file = sprintf("%s/uni.trait%s.pft.%02.0f.Rdata",dir, na, i))
     } else {
         warning(sprintf("Error running PFT %d. Skipping and moving on", pfts[i]))
     }
@@ -67,9 +73,11 @@ if(uni.group){
 
 if(multi){
   print("Start multivariate model without grouping")
+  dir <- sprintf("output/multi.trait%s",na)
+  if(!dir.exists(dir)) dir.create(dir)
   DT <- DT.run
   source("models/run.multi.R")
-  save(out, file = sprintf("output/multi.trait%s/multi.trait%s.Rdata", na, na, i))
+  save(out, file = sprintf("%s/multi.trait%s.Rdata",dir, na, i))
   remove(model,out)
   remove(DT)
   print("Done!")
@@ -77,10 +85,12 @@ if(multi){
 
 if(multi.group){
   print("Start multivariate model with grouping")
+  dir <- sprintf("output/multi.trait%s",na)
+  if(!dir.exists(dir)) dir.create(dir)
   for(i in 1:length(pfts)){
     DT <- DT.run[pft == pfts[i]]
     source("models/run.multi.R")
-    save(out, file = sprintf("output/multi.trait%s/multi.trait%s.pft.%02.0f.Rdata", na, na, i))
+    save(out, file = sprintf("%s/multi.trait%s.pft.%02.0f.Rdata",dir, na, i))
     remove(DT)
     print(paste("Done!", pfts[i]))
   }
@@ -91,15 +101,17 @@ if(multi.group){
 
 if(hier){
   print("Start hierarchical model")
+  dir <- sprintf("output/hier.trait.pft%s",na)
+  if(!dir.exists(dir)) dir.create(dir)
   DT <- DT.run
   source("models/run.hier.R")
-  save(out, file = sprintf("output/hier.trait.pft%s/hier.trait.pft%s.Rdata",na, na))
+  save(out, file = sprintf("%s/hier.trait.pft%s.Rdata",dir,na))
   remove(model,out)
   remove(DT)
   print("Done!")
 }
 
-## PRINT WARNINGS ################################################################
+## PRINT WARNINGS ##############################################################
 
 print("=================================")
 print("PRINT WARNINGS")
