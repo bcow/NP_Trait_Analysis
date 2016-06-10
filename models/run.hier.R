@@ -28,8 +28,8 @@ data <- list(
   n_obvs = n_obvs, 
   mu0 = rep(0,n_traits), 
   Sigma0 = diag(0.001,n_traits),
-  scale = scale.w,
-  df = df)
+  Wishart.rate = Wishart.rate,
+  Wishart.df = Wishart.df)
 
 n.iter <- 30000
 inits = function() list(mu_trait = as.numeric(trait_means),
