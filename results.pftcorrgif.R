@@ -2,14 +2,13 @@ library(R2jags)
 library(corrplot)
 
 source("00.common.R")
-load("output/hier.trait.pft.na.Rdata") # Object name is "out"
+load("output/hier.trait.pft.na/hier.trait.pft.na.Rdata") # Object name is "out"
 
 # Get the covariance matrices for each PFT
-cov.all <- out$BUGSoutput$mean$Sigma_pfts
-cor.all <- array2DApply(cov.all, cov2cor)
+cov.all <- out$BUGSoutput$mean$Sigma_pft
+cor.all <- plyr::aaply(cov.all, 1,  cov2cor)
 
-dimnames(cor.all)[[1]] <- pft.names
-dimnames(cor.all)[[2]] <- dimnames(cor.all)[[3]] <- traits
+dimnames(cor.all) <- list(pft.names, traits, traits)
 
 for(i in 1:npft){
     pft <- dimnames(cor.all)[[1]][i]

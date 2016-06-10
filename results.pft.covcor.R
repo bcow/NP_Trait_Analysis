@@ -3,6 +3,9 @@ source("00.common.R")
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(RColorBrewer)
+library(grid)
+library(gridExtra)
 
 summarizeSampleMatrix <- function(cov.all.samples, dims){
     # Calculate summary statistics across samples
@@ -37,10 +40,11 @@ summarizeSampleMatrix <- function(cov.all.samples, dims){
 
 print("Loading covariance matrix...")
 load("output/hier.trait.pft.na/hier.trait.pft.na.Rdata") # Object name is "out"
-cov.all <- array3Dapply(out$BUGSoutput$sims.list$Sigma_pft, solve)
+cov.all <- out$BUGSoutput$sims.list$Sigma_pft
+#cov.all <- array3Dapply(out$BUGSoutput$sims.list$Sigma_pft, solve)
 print("Calculating sample correlation matrices...")
+cor.all <- cov.all
 cor.all <- array3Dapply(cov.all, cov2cor)
-print("Summarizing covariance matrices...")
 cov.dat <- summarizeSampleMatrix(cov.all, 2:4)
 print("Summarizing correlation matrices...")
 cor.dat <- summarizeSampleMatrix(cor.all, 2:4) %>%
@@ -82,7 +86,7 @@ dev.off()
 biome.colors <- brewer.pal(length(unique(cor.dat$Biome)),"Set1")  
 names(biome.colors) <- unique(cor.dat$Biome)
 ps_type.colors <- brewer.pal(length(unique(cor.dat$ps_type)),"Set2")  
-names(ps.type.colors) <- unique(cor.dat$ps_type)
+names(ps_type.colors) <- unique(cor.dat$ps_type)
 leaf_type.colors <- brewer.pal(length(unique(cor.dat$leaf_type)),"Set3")  
 names(leaf_type.colors) <- unique(cor.dat$leaf_type)
 growth_form.colors <- brewer.pal(length(unique(cor.dat$growth_form)),"Dark2")  
@@ -90,6 +94,7 @@ names(growth_form.colors) <- unique(cor.dat$growth_form)
 Function.colors <- brewer.pal(length(unique(cor.dat$Function)),"Accent")  
 names(Function.colors) <- unique(cor.dat$Function)
 
+trait.pairs <- unique(cor.dat[, Trait])
 for(i in 1:length(trait.pairs)){
   dat <- filter(cor.dat, Trait == trait.pairs[i])
   # ggplot(dat) + geom_density(aes(Mean, colour=Biome))
@@ -117,7 +122,6 @@ dev.off()
 ##### Plot the ANOVA ###########################################################
 
 print("Generating ANOVA plot...")
-trait.pairs <- unique(cor.dat[, Trait])
 cor.list <- list()
 rnames <- c("Biome", "ps_type", "growth_form", "leaf_type", "phenology", "Residuals")
 for(trait in trait.pairs){

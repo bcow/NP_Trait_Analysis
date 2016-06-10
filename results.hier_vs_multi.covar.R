@@ -14,10 +14,10 @@ plot_covar <- function(fname, ...){
 }
 
 png("figures/cor.global.multi.png")
-plot_covar("output/multi.trait.na.Rdata", main="Multivariate")
+plot_covar("output/multi.trait.na/multi.trait.na.Rdata", main="Multivariate")
 dev.off()
 
 png("figures/cor.global.hierarchical.png")
-plot_covar("output/hier.trait.pft.na.Rdata", main="Hierarchical")
+plot_covar("output/hier.trait.pft.na/hier.trait.pft.na.Rdata", main="Hierarchical")
 dev.off()
 
