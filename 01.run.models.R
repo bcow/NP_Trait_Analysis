@@ -13,18 +13,18 @@ if(!dir.exists("output")) dir.create("output")
 
 # Defining Gamma & Wishart parameters here so we can experiment
 # See test.wishart.R for more.
-# dgamma(scale.g,rate)
-# dwish(scale.w,df)
+# dgamma(gamma.shape,gamma.rate)
+# dwish(Wishart.rate,Wishart.df)
 
 n_trait = length(traits)
-n = .1
-scale.w = diag(n,n_traits) 
-df = n_traits
-mean =n*df
+n = 0.1
+Wishart.rate = diag(n,n_trait) 
+Wishart.df = n_trait
+mean = n*Wishart.df
 
 # works for univariate when n=1,.1,.01
-scale.g = mean/2 
-rate = 1/2      
+gamma.shape = mean/2 
+gamma.rate = 1/2      
 
 
 args = commandArgs(trailingOnly=TRUE)
