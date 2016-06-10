@@ -6,7 +6,7 @@ load("output/hier.trait.pft.na/hier.trait.pft.na.Rdata") # Object name is "out"
 
 # Get the covariance matrices for each PFT
 cov.all <- out$BUGSoutput$mean$Sigma_pft
-cor.all <- plyr::aaply(cov.all, 1,  cov2cor)
+cor.all <- array2DApply(cov.all, 1,  cov2cor)
 
 dimnames(cor.all) <- list(pft.names, traits, traits)
 
