@@ -6,12 +6,11 @@
 *.rds
 *.Rapp.history
 # old work
-old_Bayes_Project/*
-old_EE509_Project/*
+old*
 # private
 data/*
 # too big
-output/*
+output*
 figures/*
 # misc files
 try.pft.workflow.R
@@ -23,3 +22,5 @@ scrap.R
 figures/figures.old.data/*
 Icon*
 try.run.*
+*~
+*#*

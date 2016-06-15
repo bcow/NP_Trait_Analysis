@@ -16,7 +16,7 @@ if(!dir.exists("output")) dir.create("output")
 # dgamma(scale.g,rate)
 # dwish(scale.w,df)
 
-n_trait = length(traits)
+n_traits = length(traits)
 n = .1
 scale.w = diag(n,n_traits) 
 df = n_traits
