@@ -15,7 +15,7 @@ source("custom.jags.R")
 # dwish(Wishart.rate,Wishart.df)
 
 n_traits = 5
-n = 50
+n = 80
 Wishart.rate = diag(n, n_traits)
 Wishart.df = n_traits
 mean = n * Wishart.df
@@ -24,7 +24,7 @@ gamma.rate = n/2
 
 out.dir <- paste0("output.n",n)
 if(!dir.exists(out.dir)) dir.create(out.dir)
-
+print(out.dir)
 
 args = commandArgs(trailingOnly=TRUE)
 if(length(args) == 0){
