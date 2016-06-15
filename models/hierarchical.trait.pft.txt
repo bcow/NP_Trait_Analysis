@@ -16,11 +16,11 @@ model{
 
   mu_trait[1:n_traits]~dmnorm(mu0[], Sigma0[,])
   
-  invSigma_trait ~ dwish(scale, n_traits)
+  invSigma_trait ~ dwish(Wishart.rate, Wishart.df)
   Sigma_trait <- inverse(invSigma_trait)
   
   for(i in 1:n_pfts){
-    invSigma_pfts[i, 1:n_traits, 1:n_traits] ~ dwish(scale, df)
+    invSigma_pfts[i, 1:n_traits, 1:n_traits] ~ dwish(Wishart.rate, Wishart.df)
     Sigma_pft[i, 1:n_traits, 1:n_traits] <- inverse(invSigma_pfts[i,1:n_traits,1:n_traits])
   }
   

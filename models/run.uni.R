@@ -17,8 +17,8 @@ data <- list(
   obvs = obvs,
   n_traits = n_traits,
   n_obvs = n_obvs,
-  scale = scale.g,
-  rate = rate # scale/rate = n
+  gamma.shape = gamma.shape,
+  gamma.rate = gamma.rate       # scale/rate = n
   )
 
 n.iter <- 5000
