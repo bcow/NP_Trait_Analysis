@@ -15,7 +15,7 @@ source("custom.jags.R")
 # dwish(Wishart.rate,Wishart.df)
 
 n_traits = 5
-n = 50
+n = 80
 Wishart.rate = diag(n, n_traits)
 Wishart.df = n_traits
 mean = n * Wishart.df
@@ -70,7 +70,7 @@ if(uni.group){
     DT <- DT.run[pft == pfts[i]]
     source("models/run.uni.R")
     if (!all(is.error(out))){
-        save(out, file = sprintf("%s/uni.trait%s.pft.%02.0f.Rdata",dir, na, i))
+        save(out, file = sprintf("%s/uni.trait%s.pft.%02d.Rdata",dir, na, pfts[i]))
       remove(out)
     } else {
         warning(sprintf("Error running PFT %d. Skipping and moving on", pfts[i]))
@@ -92,7 +92,7 @@ if(multi){
   if(!dir.exists(dir)) dir.create(dir)
   DT <- DT.run
   source("models/run.multi.R")
-  save(out, file = sprintf("%s/multi.trait%s.Rdata",dir, na, i))
+  save(out, file = sprintf("%s/multi.trait%s.Rdata",dir, na))
   remove(model,out,DT)
   print("Done!")
 }
@@ -104,7 +104,7 @@ if(multi.group){
   for(i in 1:length(pfts)){
     DT <- DT.run[pft == pfts[i]]
     source("models/run.multi.R")
-    save(out, file = sprintf("%s/multi.trait%s.pft.%02.0f.Rdata",dir, na, i))
+    save(out, file = sprintf("%s/multi.trait%s.pft.%02d.Rdata",dir, na, pfts[i]))
     remove(out,DT)
     print(paste("Done!", pfts[i]))
   }
