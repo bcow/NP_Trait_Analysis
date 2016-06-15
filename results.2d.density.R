@@ -1,4 +1,5 @@
 source("00.common.R")
+source("functions.2ddensplot.R")
 library(magrittr)
 library(MASS)
 
@@ -6,31 +7,31 @@ mypng <- function(path){
     png(path, width=800, height = 800)
 }
 
-pairs.density <- function(uni.mus, multi.mus, hier.mus, obs.means, obs.global, nsamp=3000, ...){
+pairs.density <- function(uni.mus, multi.mus, hier.mus, 
+                          obs.means, obs.global, nsamp=5000, ...){
 
-    dens2d <- function(x,y,...) {
-        z <- kde2d(x, y)
-        contour(z, nlevels = 2, add = TRUE, drawlabels = FALSE, ...)
-    }
+    uni <- 1:nsamp
+    multi <- uni + nsamp
+    hier <- multi + nsamp
+    breaks.dens <- list(uni, multi, hier)
 
-    dens2d.panel <- function(x, y){
-        dens2d(x[n1], y[n1], col=mod.colors[1])
-        dens2d(x[n2], y[n2], col=mod.colors[2])
-        dens2d(x[n3], y[n3], col=mod.colors[3])
-        if(!is.nan(x[nlast])) abline(v = x[nlast])
-        if(!is.nan(x[nlast])) abline(h = y[nlast])
-        abline(v = x[nlast2], lty="dashed", col="red")
-        abline(h = y[nlast2], lty="dashed", col="red")
-    }
+    obs_mean <- nsamp*3 + 1
+    global_mean <- obs_mean + 1
+    breaks.line <- list(obs_mean, global_mean)
 
-    n1 <- 1:nsamp
-    n2 <- n1 + 3000
-    n3 <- n2 + 3000
-    nlast <- nsamp*3 + 1
-    nlast2 <- nlast + 1
-    mod.colors <- c("uni" = "blue",
-                    "multi" = "green",
-                    "hier" = "red")
+    breaks <- list("density" = breaks.dens, "line" = breaks.line)
+
+    dens.pars <- list(uni = list(col = "blue", lwd=2),
+                      multi = list(col = "green4", lwd=2),
+                      hier = list(col = "red", lwd=2))
+
+    line.pars <- list(obs_means = list(lty = "dashed",
+                                       col = "black", 
+                                       lwd = 2),
+                      global_means = list(lty = "dotted", 
+                                          col="hotpink4", 
+                                          lwd = 2))
+
     mus.list <- list(uni.mus[sample.int(nsamp),],
                      multi.mus[sample.int(nsamp),],
                      hier.mus[sample.int(nsamp),],
@@ -38,7 +39,9 @@ pairs.density <- function(uni.mus, multi.mus, hier.mus, obs.means, obs.global, n
                      obs.global)
     plot.mus <- do.call(rbind, mus.list)
 
-    pairs(plot.mus, lower.panel = dens2d.panel, upper.panel=NULL, ...)
+    pairs(plot.mus, panel = dens2d.panel, densfunc = ellipse2d,
+          breaks = breaks,
+          dens.pars = dens.pars, line.pars = line.pars, ...)
 }
 
 # Load outputs global outputs
@@ -76,22 +79,22 @@ obs.means.global <- try.na[, lapply(.SD, mean, na.rm=TRUE),
 
 message("Creating global figure...")
 mypng("figures/alexey_pairs/00.global.png")
-pairs.density(uni.mus, multi.mus, hier.mus.global, obs.means.global, obs.means.global, main="Global")
+pairs.density(uni.mus, multi.mus, hier.mus.global, NA, obs.means.global, main="Global")
 dev.off()
 
 # Draw plots by PFT
 for(i in 1:npft){
-    print(c(i, pft.names[i]))
+    print(paste(i, pft.names[i]))
     hier.mus <- hier.mus.pft[,i,]
     multi.mus <- load.mu(sprintf("output/multi.trait.na/multi.trait.na.pft.%02d.Rdata", i))
     uni.mus <- load.mu(sprintf("output/uni.trait.na/uni.trait.na.pft.%02d.Rdata", i))
     obs.means <- try.na[pft == pft.names[i], 
                         lapply(.SD, mean, na.rm=TRUE),
                         .SDcols = traits] %>% c() %>% unlist()
-    print(obs.means)
 
     mypng(sprintf("figures/alexey_pairs/%02d.pft.png", i))
-    pairs.density(uni.mus, multi.mus, hier.mus, obs.means, obs.means.global,
+    pairs.density(uni.mus, multi.mus, hier.mus, 
+                  obs.means, obs.means.global,
                   main=paste(i, pft.names[i]))
     dev.off()
 }
