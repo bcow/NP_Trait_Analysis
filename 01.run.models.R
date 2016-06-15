@@ -16,16 +16,13 @@ if(!dir.exists("output")) dir.create("output")
 # dgamma(gamma.shape,gamma.rate)
 # dwish(Wishart.rate,Wishart.df)
 
-n_traits = length(traits)
-n = 0.1
-Wishart.rate = diag(n,n_traits) 
-Wishart.df = n_trait
-mean = n*Wishart.df
-
-# works for univariate when n=1,.1,.01
-gamma.shape = mean/2 
-gamma.rate = 1/2      
-
+n_traits = 5
+n = 50
+Wishart.rate = diag(n, n_traits)
+Wishart.df = n_traits
+mean = n * Wishart.df
+gamma.shape = Wishart.df/2 
+gamma.rate = n/2   
 
 args = commandArgs(trailingOnly=TRUE)
 if(length(args) == 0){
