@@ -9,8 +9,6 @@ source("00.common.R")
 source("load.try.data.R")
 source("custom.jags.R")
 
-if(!dir.exists("output")) dir.create("output")
-
 # Defining Gamma & Wishart parameters here so we can experiment
 # See test.wishart.R for more.
 # dgamma(gamma.shape,gamma.rate)
@@ -23,6 +21,10 @@ Wishart.df = n_traits
 mean = n * Wishart.df
 gamma.shape = Wishart.df/2 
 gamma.rate = n/2   
+
+out.dir <- paste0("output.n",n)
+if(!dir.exists(out.dir)) dir.create(out.dir)
+
 
 args = commandArgs(trailingOnly=TRUE)
 if(length(args) == 0){
@@ -49,7 +51,7 @@ pfts <- unique(DT.run[,pft])
 
 if(uni){
   print("Start univariate model without grouping")
-  dir <- sprintf("output/uni.trait%s",na)
+  dir <- sprintf("%s/uni.trait%s",out.dir,na)
   if(!dir.exists(dir)) dir.create(dir)
   DT <- DT.run
   source("models/run.uni.R")
@@ -60,7 +62,7 @@ if(uni){
 
 if(uni.group){
   print("Start univariate model with grouping") 
-  dir <- sprintf("output/uni.trait%s",na)
+  dir <- sprintf("%s/uni.trait%s",out.dir,na)
   if(!dir.exists(dir)) dir.create(dir)
   errors <- numeric(0)
   for(i in 1:length(pfts)){
@@ -86,7 +88,7 @@ if(uni.group){
 
 if(multi){
   print("Start multivariate model without grouping")
-  dir <- sprintf("output/multi.trait%s",na)
+  dir <- sprintf("%s/multi.trait%s",out.dir,na)
   if(!dir.exists(dir)) dir.create(dir)
   DT <- DT.run
   source("models/run.multi.R")
@@ -97,7 +99,7 @@ if(multi){
 
 if(multi.group){
   print("Start multivariate model with grouping")
-  dir <- sprintf("output/multi.trait%s",na)
+  dir <- sprintf("%s/multi.trait%s",out.dir,na)
   if(!dir.exists(dir)) dir.create(dir)
   for(i in 1:length(pfts)){
     DT <- DT.run[pft == pfts[i]]
@@ -114,7 +116,7 @@ if(multi.group){
 
 if(hier){
   print("Start hierarchical model")
-  dir <- sprintf("output/hier.trait.pft%s",na)
+  dir <- sprintf("%s/hier.trait.pft%s",out.dir,na)
   if(!dir.exists(dir)) dir.create(dir)
   DT <- DT.run
   source("models/run.hier.R")
