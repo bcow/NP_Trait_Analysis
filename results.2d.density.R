@@ -8,7 +8,7 @@ mypng <- function(path){
 }
 
 pairs.density <- function(uni.mus, multi.mus, hier.mus, 
-                          obs.means, obs.global, nsamp=5000, ...){
+                          obs.means, obs.global=NA, nsamp=5000, ...){
 
     uni <- 1:nsamp
     multi <- uni + nsamp
@@ -79,7 +79,7 @@ obs.means.global <- try.na[, lapply(.SD, mean, na.rm=TRUE),
 
 message("Creating global figure...")
 mypng("figures/alexey_pairs/00.global.png")
-pairs.density(uni.mus, multi.mus, hier.mus.global, NA, obs.means.global, main="Global")
+pairs.density(uni.mus, multi.mus, hier.mus.global, obs.means.global, main="Global")
 dev.off()
 
 # Draw plots by PFT
@@ -94,7 +94,7 @@ for(i in 1:npft){
 
     mypng(sprintf("figures/alexey_pairs/%02d.pft.png", i))
     pairs.density(uni.mus, multi.mus, hier.mus, 
-                  obs.means, obs.means.global,
+                  obs.means, 
                   main=paste(i, pft.names[i]))
     dev.off()
 }
