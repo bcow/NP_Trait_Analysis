@@ -70,3 +70,10 @@ cor.plot.dat <- cor.anova %>% add_rownames(var = "Type") %>%
 
 cor.plot.dat[, scaledValue := Value / sum(Value), by=Trait]
 
+# Compute total variance by type
+tot.var.table <- cor.plot.dat[, list(tot.var = sum(Value)), by=Type]
+tot.var.table[, pct.var := 100 * tot.var / sum(tot.var)]
+sink("figures/tot.var.table.txt")
+print(tot.var.table[order(tot.var, decreasing=TRUE)], 
+      digits = 3)
+sink()
