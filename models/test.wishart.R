@@ -30,20 +30,12 @@ var.w <- inverse(prec.w)
 
 #### initial conditions
 n_traits = 5
-<<<<<<< HEAD
-n = 80
-=======
-n = 40
->>>>>>> 881de78f413034c76f3ed5bf4bd7360d1604e3e3
+n=1
 Wishart.rate = diag(n, n_traits)
-Wishart.df = n_traits + 20
+Wishart.df = n_traits
 mean = n * Wishart.df
 gamma.shape = Wishart.df/2    # Precision was estimated from `mean` observations
-<<<<<<< HEAD
-gamma.rate = n/2        # ...with sum of squared deviations `4`.
-=======
-gamma.rate = n/2        # ...with sum of squared deviations `1`.
->>>>>>> 881de78f413034c76f3ed5bf4bd7360d1604e3e3
+gamma.rate = n/2
 
 gamma_mean <- gamma.shape / gamma.rate
 gamma_var <- gamma.shape / gamma.rate^2
@@ -72,31 +64,21 @@ sds <- jags.out$BUGSoutput$sd
 # Plot output
 cols <- c("black", "red", "blue", "green4")
 par(mfrow=c(1,2))
-<<<<<<< HEAD
 plot(density(samples$prec.g), col=cols[1], main="Prior comparison: Precision",
      xlim = c(0,15))
-=======
-plot(density(samples$prec.g), col=cols[1], main="Prior comparison: Precision", xlim=c(0,25))
->>>>>>> 881de78f413034c76f3ed5bf4bd7360d1604e3e3
 lines(density(samples$prec.w[,1,1]), col=cols[2])
 lines(density(samples$prec.w[,2,2]), col=cols[3])
 lines(density(samples$prec.w[,3,3]), col=cols[4])
 legend("topright", 
        c("Gamma", "Wish[1,1]", "Wish[2,2]", "Wish[3,3]"),
        col=cols, lty=1)
-<<<<<<< HEAD
-plot(density(samples$var.g), col=cols[1], main="Prior comparison: Variance",
-     xlim = c(0,15))
-=======
 plot(density(samples$var.g), col=cols[1], main="Prior comparison: Variance", xlim=c(0,25))
->>>>>>> 881de78f413034c76f3ed5bf4bd7360d1604e3e3
 lines(density(samples$var.w[,1,1]), col=cols[2])
 lines(density(samples$var.w[,2,2]), col=cols[3])
 lines(density(samples$var.w[,3,3]), col=cols[4])
 legend("topright", 
        c("Gamma", "Wish[1,1]", "Wish[2,2]", "Wish[3,3]"),
        col=cols, lty=1)
-<<<<<<< HEAD
 
 gamma_mean <- gamma.shape / gamma.rate
 gamma_var <- gamma.shape / gamma.rate^2
@@ -109,10 +91,3 @@ print(sprintf("Wishart mean: %.3f", wishart_mean))
 print(sprintf("Wishart var: %.3f", wishart_var))
 
 print(sprintf("Variance is: %.3f", 1/wishart_mean))
-
-=======
-print(sprintf("Gamma mean: %.3f", means$prec.g ))
-print(sprintf("Gamma variance: %.3f", sds$prec.g^2))
-print(sprintf("Wishart mean: %.3f", means$prec.w[1,1]))
-print(sprintf("Wishart var: %.3f", sds$prec.w[1,1]^2))
->>>>>>> 881de78f413034c76f3ed5bf4bd7360d1604e3e3
