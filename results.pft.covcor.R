@@ -7,37 +7,6 @@ library(RColorBrewer)
 library(grid)
 library(gridExtra)
 
-summarizeSampleMatrix <- function(cov.all.samples, dims){
-    # Calculate summary statistics across samples
-    cov.all.list <- list(Mean = apply(cov.all.samples, dims, mean),
-                        SD = apply(cov.all.samples, dims, sd),
-                        q025 = apply(cov.all.samples, dims, quantile, 0.025),
-                        q500 = apply(cov.all.samples, dims, quantile, 0.500),
-                        q975 = apply(cov.all.samples, dims, quantile, 0.975)
-                        ) %>% lapply("dimnames<-", list(pft.names, traits, traits))
-
-    trait.combine <- combn(traits, 2)
-    getcov <- function(trait, cov.all) cov.all[, trait[1], trait[2]]
-    columnize <- function(mat.wide){
-        cov.mat <- apply(trait.combine, 2, getcov, mat.wide) %>% as.data.frame
-        cov.mat.names <- apply(trait.combine, 2, paste, collapse="_") %>%
-            gsub("log.", "", .)
-        colnames(cov.mat) <- cov.mat.names
-        return(cov.mat)
-    }
-
-    cov.dat <- lapply(cov.all.list, columnize) %>% 
-        do.call(cbind, .) %>%
-        add_rownames(var = "PFT") %>%
-        gather(Stat.Trait, Value, -PFT) %>%
-        separate(Stat.Trait, into=c("Stat", "Trait"), sep="\\.") %>%
-        spread(Stat, Value) %>%
-        separate(PFT, into=c("Biome", "Function"), sep="_", 
-                 extra="merge", remove=FALSE)
-
-    return(cov.dat)
-}
-
 print("Loading covariance matrix...")
 load("output/hier.trait.pft.na/hier.trait.pft.na.Rdata") # Object name is "out"
 cov.all <- out$BUGSoutput$sims.list$Sigma_pft
@@ -45,13 +14,26 @@ cov.all <- out$BUGSoutput$sims.list$Sigma_pft
 print("Calculating sample correlation matrices...")
 cor.all <- cov.all
 cor.all <- array3Dapply(cov.all, cov2cor)
-cov.dat <- summarizeSampleMatrix(cov.all, 2:4)
+cov.dat <- summarizeSampleMatrix(cov.all, 2:4, list(pft.names,traits,traits))
 print("Summarizing correlation matrices...")
-cor.dat <- summarizeSampleMatrix(cor.all, 2:4) %>%
+cor.dat <- summarizeSampleMatrix(cor.all, 2:4, list(pft.names,traits,traits)) %>%
     separate(Function, into = c("growth_form", "ps_type", "leaf_type", "phenology"),
              sep = "_", extra = "drop", remove=FALSE) %>%
     as.data.table()
 cor.dat[is.na(ps_type), c("ps_type", "leaf_type", "phenology") := Function]
+
+cov.global <- out$BUGSoutput$sims.list$Sigma_trait
+cor.global <- array2DApply(cov.global, cov2cor)
+
+cor.all.g <-  abind(cor.all, cor.global, along= 2)
+cor.dat.names <- c(list(c(pft.names, "global"), traits, traits))
+cor.dat.g <- summarizeSampleMatrix(cor.all.g, 2:4, cor.dat.names) %>%
+  separate(Function, into = c("growth_form", "ps_type", "leaf_type", "phenology"),
+           sep = "_", extra = "drop", remove=FALSE) %>%
+  as.data.table()
+cor.dat.g[is.na(ps_type), c("ps_type", "leaf_type", "phenology") := Function]
+cor.dat.test <- filter(cor.dat.g, PFT != "global")
+all(cor.dat.test == cor.dat)
 
 ##### Facet Grid Correlation Plot ##############################################
 
@@ -116,9 +98,12 @@ print("All done!")
 
 ##### Stacked Correlation Plot #################################################
 
+cor.dat.what<- filter(cor.dat.g, PFT != "global")
+
 # playing with different colors
-biome.colors <- brewer.pal(length(unique(cor.dat$Biome)),"Set1")  
-names(biome.colors) <- unique(cor.dat$Biome)
+Biome.colors <- brewer.pal(length(unique(cor.dat$Biome))+1,"Set1")  
+names(Biome.colors) <- c(unique(cor.dat$Biome), "Global")
+
 ps_type.colors <- brewer.pal(length(unique(cor.dat$ps_type)),"Set2")  
 names(ps_type.colors) <- unique(cor.dat$ps_type)
 leaf_type.colors <- brewer.pal(length(unique(cor.dat$leaf_type)),"Set3")  
@@ -128,16 +113,20 @@ names(growth_form.colors) <- unique(cor.dat$growth_form)
 Function.colors <- brewer.pal(length(unique(cor.dat$Function)),"Accent")  
 names(Function.colors) <- unique(cor.dat$Function)
 
+global.mean <- mean(cor.dat$Mean)
+
 for(i in 1:length(trait.pairs)){
   dat <- filter(cor.dat, Trait == trait.pairs[i])
-  # ggplot(dat) + geom_density(aes(Mean, colour=Biome))
-  # ggplot(dat) + geom_histogram()
-  # ggplot(dat, aes(Mean, colour=Biome)) + geom_density()
-  # ggplot(dat, aes(Mean, fill = Biome)) + geom_histogram(binwidth = .06)
-  p <- ggplot(dat, aes(x=Mean, y=..density..)) + 
-    geom_density(aes(fill=Biome), position="stack") +
-    scale_fill_manual(values=biome.colors) + labs(title = trait.pairs[i]) + 
-    theme(legend.position="none")
+  biome.means <- as.data.frame(summarise(group_by(dat, Biome),
+            mean=mean(Mean)))
+  mean <- mean(dat$Mean)
+
+  p <- ggplot() + geom_vline(xintercept = global.mean, size=1.5, color="magenta") + 
+    scale_colour_manual(values=Biome.colors)+ 
+    geom_density(data=dat,aes(x=Mean, y=..density..,fill=Biome), position="stack") +
+    scale_fill_manual(values=Biome.colors) + labs(title = trait.pairs[i]) + 
+    xlim(-1,1) + geom_vline(xintercept = 0, size=.5, linetype = "longdash") + 
+    theme(legend.position = "none")
   assign(paste0("p",i), p)
 }
 r <- rectGrob(gp=gpar(fill="white"))
@@ -146,7 +135,7 @@ g <- ggplotGrob(p1 + theme(legend.position="right"))$grobs
 legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
 lheight <- sum(legend$height)
 lwidth <- sum(legend$width)
-png(filename = sprintf("figures/stacked.cor.Biome.png"), height = 800, width=1100)
+png(filename = sprintf("figures/stacked.cor.growth_form.png"), height = 800, width=1100)
 grid.newpage() 
 grid.draw(arrangeGrob(p,legend,ncol = 2, 
                       widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
