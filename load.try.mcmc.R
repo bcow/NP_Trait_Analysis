@@ -32,7 +32,7 @@ load.try.mcmc <- function(models,v){
       }
     }
     
-    if(length(grep("hier", model)) == 1 & v == "mu_trait"){
+    if(length(grep("hier", model)) == 1 & v == "mu_trait" & length(global) == 1){
         load(global)
         out.by.pft <- as.data.frame(as.matrix(as.mcmc(out))) %>% select(., contains("mu_pft_trait"))
         for(i in 1:(ncol(out.by.pft)/5)){

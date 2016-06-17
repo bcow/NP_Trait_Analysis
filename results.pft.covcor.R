@@ -7,8 +7,9 @@ library(ggplot2)
 library(RColorBrewer)
 library(grid)
 library(gridExtra)
+library(abind)
 
-##### Facet Grid Correlation Plot ##############################################
+##### Facet Grid Correlation Plot ##########################
 
 cov.plt <- ggplot(cov.dat) + 
     aes(x=Function, y=q500, ymin=q025, ymax=q975, color=Function) +
@@ -34,7 +35,7 @@ mypng("figures/pft.cor.plot.png")
 plot(cov.plt %+% cor.dat + ylab("Correlation"))
 dev.off()
 
-##### Plot the ANOVA ###########################################################
+##### Plot the ANOVA ##########################################
 
 Type.colors <- c(brewer.pal(5, "Spectral"), "grey")
 names(Type.colors) <- rnames
@@ -54,11 +55,14 @@ dev.off()
 
 print("All done!")
 
-##### Stacked Correlation Plot #################################################
+##### Stacked Correlation Plot ################################
+
+cor.dat.what<- filter(cor.dat.g, PFT != "global")
 
 # playing with different colors
-biome.colors <- brewer.pal(length(unique(cor.dat$Biome)),"Set1")  
-names(biome.colors) <- unique(cor.dat$Biome)
+Biome.colors <- brewer.pal(length(unique(cor.dat$Biome))+1,"Set1")  
+names(Biome.colors) <- c(unique(cor.dat$Biome), "Global")
+
 ps_type.colors <- brewer.pal(length(unique(cor.dat$ps_type)),"Set2")  
 names(ps_type.colors) <- unique(cor.dat$ps_type)
 leaf_type.colors <- brewer.pal(length(unique(cor.dat$leaf_type)),"Set3")  
@@ -70,14 +74,17 @@ names(Function.colors) <- unique(cor.dat$Function)
 
 for(i in 1:length(trait.pairs)){
   dat <- filter(cor.dat, Trait == trait.pairs[i])
-  # ggplot(dat) + geom_density(aes(Mean, colour=Biome))
-  # ggplot(dat) + geom_histogram()
-  # ggplot(dat, aes(Mean, colour=Biome)) + geom_density()
-  # ggplot(dat, aes(Mean, fill = Biome)) + geom_histogram(binwidth = .06)
-  p <- ggplot(dat, aes(x=Mean, y=..density..)) + 
-    geom_density(aes(fill=Biome), position="stack") +
-    scale_fill_manual(values=biome.colors) + labs(title = trait.pairs[i]) + 
-    theme(legend.position="none")
+  global.mean <- filter(cor.global.dat, trait == trait.pairs[i])$Value
+  biome.means <- as.data.frame(summarise(group_by(dat, Biome),
+            mean=mean(Mean)))
+  mean <- mean(dat$Mean)
+
+  p <- ggplot() + geom_vline(xintercept = global.mean, size=1.5, color="magenta") + 
+    scale_colour_manual(values=Biome.colors)+ 
+    geom_density(data=dat,aes(x=Mean, y=..density..,fill=Biome), position="stack") +
+    scale_fill_manual(values=Biome.colors) + labs(title = trait.pairs[i]) + 
+    xlim(-1,1) + geom_vline(xintercept = 0, size=.5, linetype = "longdash") + 
+    theme(legend.position = "none")
   assign(paste0("p",i), p)
 }
 r <- rectGrob(gp=gpar(fill="white"))
@@ -86,7 +93,7 @@ g <- ggplotGrob(p1 + theme(legend.position="right"))$grobs
 legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
 lheight <- sum(legend$height)
 lwidth <- sum(legend$width)
-png(filename = sprintf("figures/stacked.cor.Biome.png"), height = 800, width=1100)
+png(filename = sprintf("figures/stacked.cor.biome.png"), height = 800, width=1100)
 grid.newpage() 
 grid.draw(arrangeGrob(p,legend,ncol = 2, 
                       widths = unit.c(unit(1, "npc") - lwidth, lwidth)))

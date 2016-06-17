@@ -18,9 +18,9 @@ columnize <- function(mat.wide){
     return(cov.mat)
 }
 
-summarizeSampleMatrix <- function(cov.all.samples, dims){
+summarizeSampleMatrix <- function(cov.all.samples, dims, 
+                                  dim.names=list(pft.names, traits, traits)){
     # Calculate summary statistics across samples
-    dim.names <- list(pft.names, traits, traits)
     cov.all.list <- list(Mean = apply(cov.all.samples, dims, mean),
                         SD = apply(cov.all.samples, dims, sd),
                         q025 = apply(cov.all.samples, dims, quantile, 0.025),
