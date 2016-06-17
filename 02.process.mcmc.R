@@ -5,15 +5,16 @@ library(data.table)
 library(mcmc)
 library(mcmcplots)
 
+source("00.common.R")
 source("load.try.data.R")
 source("load.try.mcmc.R")
 
 ## TRAIT MEANS - global and by pft #############################################
 
-
+file.symlink("nouts/output.n25/","output")
 models = dir("output/")
 models = models[grep("na",models)]
-
+path.expand(Sys.readlink("output"))
 v = "mu_trait"
 out.names <- load.try.mcmc(models, v)
 
