@@ -7,24 +7,26 @@ library(RColorBrewer)
 library(grid)
 library(gridExtra)
 
+getcov <- function(trait, cov.all) cov.all[, trait[1], trait[2]]
+
+columnize <- function(mat.wide){
+    trait.combine <- combn(traits, 2)
+    cov.mat <- apply(trait.combine, 2, getcov, mat.wide) %>% as.data.frame
+    cov.mat.names <- apply(trait.combine, 2, paste, collapse="_") %>%
+        gsub("log.", "", .)
+    colnames(cov.mat) <- cov.mat.names
+    return(cov.mat)
+}
+
 summarizeSampleMatrix <- function(cov.all.samples, dims){
     # Calculate summary statistics across samples
+    dim.names <- list(pft.names, traits, traits)
     cov.all.list <- list(Mean = apply(cov.all.samples, dims, mean),
                         SD = apply(cov.all.samples, dims, sd),
                         q025 = apply(cov.all.samples, dims, quantile, 0.025),
                         q500 = apply(cov.all.samples, dims, quantile, 0.500),
                         q975 = apply(cov.all.samples, dims, quantile, 0.975)
-                        ) %>% lapply("dimnames<-", list(pft.names, traits, traits))
-
-    trait.combine <- combn(traits, 2)
-    getcov <- function(trait, cov.all) cov.all[, trait[1], trait[2]]
-    columnize <- function(mat.wide){
-        cov.mat <- apply(trait.combine, 2, getcov, mat.wide) %>% as.data.frame
-        cov.mat.names <- apply(trait.combine, 2, paste, collapse="_") %>%
-            gsub("log.", "", .)
-        colnames(cov.mat) <- cov.mat.names
-        return(cov.mat)
-    }
+                        ) %>% lapply("dimnames<-", dim.names)
 
     cov.dat <- lapply(cov.all.list, columnize) %>% 
         do.call(cbind, .) %>%
@@ -40,8 +42,23 @@ summarizeSampleMatrix <- function(cov.all.samples, dims){
 
 print("Loading covariance matrix...")
 load("output/hier.trait.pft.na/hier.trait.pft.na.Rdata") # Object name is "out"
+# Get global covariance and correlation
+cov.global <- out$BUGSoutput$sims.list$Sigma_trait
+cor.global <- array2DApply(cov.global, cov2cor)
+traits.nolog <- traits %>% gsub("log.", "", .)
+cor.mean <- apply(cor.global, 2:3, mean)
+cor.global.dat <- apply(cor.global, 2:3, mean) %>%
+    "dimnames<-"(list(traits.nolog, traits.nolog)) %>%
+    replace(upper.tri(., diag=TRUE), NA) %>%
+    as.data.frame %>%
+    add_rownames(var = "trait2") %>%
+    gather(trait1, Value, -trait2) %>%
+    filter(!is.na(Value)) %>%
+    mutate(trait = paste(trait1, trait2, sep="_")) %>%
+    select(trait, Value)
+
+# Get PFT covariance matrices
 cov.all <- out$BUGSoutput$sims.list$Sigma_pft
-#cov.all <- array3Dapply(out$BUGSoutput$sims.list$Sigma_pft, solve)
 print("Calculating sample correlation matrices...")
 cor.all <- cov.all
 cor.all <- array3Dapply(cov.all, cov2cor)
@@ -77,3 +94,4 @@ sink("figures/tot.var.table.txt")
 print(tot.var.table[order(tot.var, decreasing=TRUE)], 
       digits = 3)
 sink()
+
