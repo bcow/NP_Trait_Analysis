@@ -6,20 +6,16 @@ require(grid)
 require(gridExtra)
 require(data.table)
 
-v = "mu_trait"
-
-model <- "multi.trait"
-load("output/Sigma.outs.Rdata")
+model <- "hier.trait.pft"
+load("output/Sigma_pft.outs.Rdata")
 ind <- grep(names(outs), pattern=paste0(model,".na"))
-Sigma_outs <- outs[ind]
-remove(outs)
+Sigma_outs <- out.Sigma.pft[[ind]]
 
-load("output/mu_trait.outs.Rdata")
+load("output/out.trait.means.Rdata")
 ind <- grep(names(outs), pattern=paste0(model,".na"))
-mu_trait_outs <- outs[ind]
-remove(outs)
+mu_trait_outs <- out.trait.means[[ind]]
 
-filename <- sprintf("figures/%s.%s.Sigma.png",v,model)
+filename <- sprintf("figures/%s.Sigma.ellipses.png",model)
 
 m <- max(as.numeric(lapply(mu_trait_outs, function(x) dim(x)[1])))
 
@@ -32,6 +28,41 @@ Mcol <- data.table(model = names(mu_trait_outs))[,end := lapply(model, function(
 
 biomeColors <- unlist(Mcol[,color])
 names(biomeColors) <- names(mu_trait_outs)
+
+
+samp.dat <-  as.data.table(merge(samples,color.dt[,.(Model,pft.num)],by="Model"))
+
+obvs.dat <- try.na[,pft.num := sprintf("%02.f", as.numeric(pft))]
+obvs.dat <- obvs.dat[,pft:=NULL]
+obvs.dat[,Data := rep("Observed", nrow(obvs.dat))]
+names(obvs.dat)
+
+for(P in unique(samp.dat$pft.num)){
+  pft.samp.dat <- filter(samp.dat, pft.num == P)
+  pft.obvs.dat <- filter(obvs.dat, pft.num == P)
+  for(N in 1:length(v1)){
+    xname <- paste(unlist(strsplit(traits[v1[N]], "[.]"))[1:2],collapse =" ")
+    yname <- paste(unlist(strsplit(traits[v2[N]], "[.]"))[1:2],collapse =" ")
+    
+    plot.samp.dat <- pft.samp.dat[,c(traits[v1[N]],traits[v2[N]],"Model"), with=F]
+    if(P=="global"){
+      plot.obvs.dat <- try.na[,c(traits[v1[N]],traits[v2[N]]),with=F][,Data := rep("Observed", nrow(obvs.dat))]
+    }else{
+      plot.obvs.dat <- pft.obvs.dat[,c(traits[v1[N]],traits[v2[N]],"Data"),with=F]
+    }
+    
+    colnames(plot.samp.dat) <- c("V1","V2","Model")
+    colnames(plot.obvs.dat) <- c("V1","V2","Data") 
+    
+    plot.colors <- c("black","red","green","blue")
+    names(plot.colors) <- c("Observed", unique(plot.samp.dat$Model))
+    
+
+
+
+
+
+
 
 
 a <- b <- length(traits)

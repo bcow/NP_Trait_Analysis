@@ -30,12 +30,12 @@ var.w <- inverse(prec.w)
 
 #### initial conditions
 n_traits = 5
-n = 40
+n=1
 Wishart.rate = diag(n, n_traits)
-Wishart.df = n_traits + 20
+Wishart.df = n_traits
 mean = n * Wishart.df
 gamma.shape = Wishart.df/2    # Precision was estimated from `mean` observations
-gamma.rate = n/2        # ...with sum of squared deviations `1`.
+gamma.rate = n/2
 
 gamma_mean <- gamma.shape / gamma.rate
 gamma_var <- gamma.shape / gamma.rate^2
@@ -64,7 +64,8 @@ sds <- jags.out$BUGSoutput$sd
 # Plot output
 cols <- c("black", "red", "blue", "green4")
 par(mfrow=c(1,2))
-plot(density(samples$prec.g), col=cols[1], main="Prior comparison: Precision", xlim=c(0,25))
+plot(density(samples$prec.g), col=cols[1], main="Prior comparison: Precision",
+     xlim = c(0,15))
 lines(density(samples$prec.w[,1,1]), col=cols[2])
 lines(density(samples$prec.w[,2,2]), col=cols[3])
 lines(density(samples$prec.w[,3,3]), col=cols[4])
@@ -78,7 +79,15 @@ lines(density(samples$var.w[,3,3]), col=cols[4])
 legend("topright", 
        c("Gamma", "Wish[1,1]", "Wish[2,2]", "Wish[3,3]"),
        col=cols, lty=1)
-print(sprintf("Gamma mean: %.3f", means$prec.g ))
-print(sprintf("Gamma variance: %.3f", sds$prec.g^2))
-print(sprintf("Wishart mean: %.3f", means$prec.w[1,1]))
-print(sprintf("Wishart var: %.3f", sds$prec.w[1,1]^2))
+
+gamma_mean <- gamma.shape / gamma.rate
+gamma_var <- gamma.shape / gamma.rate^2
+print(sprintf("Gamma mean: %.3f", gamma_mean))
+print(sprintf("Gamma var: %.3f", gamma_var))
+
+wishart_mean <- Wishart.df / Wishart.rate[1,1]
+wishart_var <- Wishart.df * 2 / (Wishart.rate[1,1]^2)
+print(sprintf("Wishart mean: %.3f", wishart_mean))
+print(sprintf("Wishart var: %.3f", wishart_var))
+
+print(sprintf("Variance is: %.3f", 1/wishart_mean))
