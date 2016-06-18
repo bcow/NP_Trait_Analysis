@@ -1,4 +1,4 @@
-run.multi <- function(DT, n.chains=3){
+run.multi <- function(DT, n.chains=3,Wishart.rate,Wishart.df){
     library(data.table)
     library(magrittr)
     ## DATA FORMATTING #########################################

@@ -1,5 +1,6 @@
-run.uni <- function(DT){
-
+run.uni <- function(DT, n.chains=3,Wishart.rate,Wishart.df){
+  library(data.table)
+  library(magrittr)
     ## DATA FORMATTING #############################################################
 
     obvs <- DT[,traits,with=FALSE]
