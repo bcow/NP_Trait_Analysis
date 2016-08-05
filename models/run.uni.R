@@ -3,6 +3,7 @@ run.uni <- function(DT){
     ## DATA FORMATTING #############################################################
 
     obvs <- DT[,traits,with=FALSE]
+    obvs <- as.matrix(obvs)
     trait_means <- as.numeric(DT[, lapply(.SD, function(x) mean(x, na.rm = T)), 
                               .SDcols = traits])
     trait_means <- replace.with.global(trait_means, global.trait.means)

@@ -2,6 +2,7 @@ run.hier <- function(DT){
     ## DATA FORMATTING #############################################################
 
     obvs <- DT[,traits,with=FALSE]
+    obvs <- as.matrix(obvs)
 
     trait_means <- as.numeric(DT[, lapply(.SD, function(x) mean(x, na.rm = T)), 
                               .SDcols = traits][, lapply(.SD, nan2na)])

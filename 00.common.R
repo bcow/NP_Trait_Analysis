@@ -1,8 +1,22 @@
 # Common definitions for scripts
 library(data.table)
 
+########################################
+# Useful variable definitions
+########################################
+
 traits <- c("log.LL", "log.LMA", "log.Nmass", "log.Pmass", "log.Rdmass")
 trait.combine <- combn(traits, 2)
+
+try.pfts <- readRDS("data/try.pft.table.rds")
+pft.factor <- try.pfts$pft.factor
+pft.names <- levels(pft.factor)
+pft.names[pft.names == "CAM"] <- "arid_CAM"
+npft <- length(pft.names)
+
+########################################
+# Helper functions
+########################################
 
 is.error <- function(x) class(x) == "try-error"
 
@@ -36,12 +50,9 @@ array3Dapply <- function(arr, func, ...){
     return(out)
 }
 
-try.pfts <- readRDS("data/try.pft.table.rds")
-pft.factor <- try.pfts$pft.factor
-pft.names <- levels(pft.factor)
-pft.names[pft.names == "CAM"] <- "arid_CAM"
-npft <- length(pft.names)
-
+########################################
+# Helper functions for plotting
+########################################
 
 # Generate biome colors for plots
 generate.colors <- function(models){
@@ -65,6 +76,9 @@ generate.colors <- function(models){
 ## Correlation and Covariance Matrices
 
 summarizeSampleMatrix <- function(cov.all.samples, dims, dim.names){
+  # Depends on global variables: 
+  #     (00.common.R) trait, trait.combine
+
   # Calculate summary statistics across samples
   cov.all.list <- list(Mean = apply(cov.all.samples, dims, mean),
                        SD = apply(cov.all.samples, dims, sd),
@@ -73,7 +87,6 @@ summarizeSampleMatrix <- function(cov.all.samples, dims, dim.names){
                        q975 = apply(cov.all.samples, dims, quantile, 0.975)
   ) %>% lapply("dimnames<-",  dim.names)
   
-  trait.combine <- combn(traits, 2)
   getcov <- function(trait, cov.all) cov.all[, trait[1], trait[2]]
   columnize <- function(mat.wide){
     cov.mat <- apply(trait.combine, 2, getcov, mat.wide) %>% as.data.frame

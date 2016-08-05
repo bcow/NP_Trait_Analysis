@@ -11,12 +11,7 @@ nan2na <- function(x){
 }
 try_full <- try_full[,lapply(.SD, nan2na)]
 
-# data with pfts and missing values
-try.na <-  try_full[,c(traits,"pft.factor"), with = F]
-setnames(try.na, colnames(try.na), c(traits, "pft"))
-try.na <- try.na[!is.na(try_full$pft)]
-
-# data with pfts and no missing values
-try <- na.omit(try.na)
-
-
+# data with pfts
+try.data <-  try_full[,c(traits,"pft.factor"), with = F]
+setnames(try.data, colnames(try.data), c(traits, "pft"))
+try.data <- try.data[!is.na(try_full$pft)]

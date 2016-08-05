@@ -4,6 +4,7 @@ run.multi <- function(DT, n.chains=3){
     ## DATA FORMATTING #########################################
 
     obvs <- DT[,traits,with=FALSE] %>% as.matrix
+    obvs <- as.matrix(obvs)
     n_obvs=dim(obvs)[1] 
     n_traits = length(traits)
 
