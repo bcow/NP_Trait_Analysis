@@ -8,7 +8,8 @@ custom.jags <- function(model, data, inits, n.chains,
                            n.chains = n.chains,
                            inits = inits,
                            max.time = "48h",
-                           method = "rjparallel")
+                           method = "rjparallel",
+                           raftery.options = FALSE)
     return(result)
 }
 

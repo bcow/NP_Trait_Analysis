@@ -12,26 +12,37 @@ run.hier <- function(DT){
                              by = pft, .SDcols = traits][,traits,with=F])
     pft_means <- t(apply(pft_means, 1, replace.with.global, global.trait.means))
 
-    n_obvs=dim(obvs)[1] 
-    n_traits = length(traits)
-    n_pfts = dim(pft_means)[1]
+    n_obvs <- nrow(obvs)
+    n_traits <- length(traits)
+    n_pfts <- nrow(pft_means)
+
+    # Missing values
+    miss <- which(is.na(obvs), arr.ind = TRUE)
+    pres <- which(!is.na(obvs), arr.ind = TRUE)
+    n_miss <- nrow(miss)
+    n_pres <- nrow(pres)
 
     ## JAGS RUN ####################################################################
 
-    model = "models/hierarchical.trait.pft.txt"
+    model = "models/hier.bug"
     print(Sys.time())
 
     data <- list(
                  pft_obvs = DT[,pft],
                  obvs = obvs,
-
                  n_pfts = n_pfts,
                  n_traits = n_traits,
                  n_obvs = n_obvs, 
+                 miss = miss,
+                 pres = pres,
+                 n_miss = n_miss,
+                 n_pres = n_pres,
                  mu0 = rep(0,n_traits), 
                  Sigma0 = diag(0.001,n_traits),
                  Wishart.rate = Wishart.rate,
-                 Wishart.df = Wishart.df)
+                 Wishart.df = Wishart.df,
+                 tau_obvs_miss = 0.1,
+                 tau_obvs_pres = 1000)
 
     inits = function() list(mu_trait = as.numeric(trait_means),
                             mu_pft_trait = as.matrix(pft_means))

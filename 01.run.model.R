@@ -29,28 +29,28 @@ out.dir <- paste0("output.n",n)
 if(!dir.exists(out.dir)) dir.create(out.dir)
 
 
-args <- commandArgs(trailingOnly=TRUE)
+if(!exists("cmdargs")) cmdargs <- commandArgs(trailingOnly=TRUE)
 # Possible arguments: 
 #   uni[_<pft>] -- Run univariate model for specified PFT number (no number means run all PFTs)
 #   multi[_<pft>] -- Run multivariate model for specified PFT number
 #   hier -- Run hierarchical model (global and PFT means)
 #   no_na -- Use only complete rows (i.e. apply `na.omit` filter to data)
 #   n.chains=n -- Run with `n` chains, where `n` is an integer.
-if(length(args) == 0){
-  args <- c("uni", "uni_01", "multi", "multi_01", "hier", "n.chains=3")   # For testing
+if(length(cmdargs) == 0){
+  cmdargs <- c("uni", "uni_01", "multi", "multi_01", "hier", "n.chains=3")   # For testing
 }
-print("Running with the following arguments:")
-print(args)
+message("Running with the following arguments:")
+print(cmdargs)
 
 # Get number of chains from arguments
 default.chains <- 3
-n.chains.index <- grep("n.chains", args)
+n.chains.index <- grep("n.chains", cmdargs)
 n.chains <- ifelse(length(n.chains.index > 0),
-                   as.numeric(gsub("n.chains=", "", args[n.chains.index])),
+                   as.numeric(gsub("n.chains=", "", cmdargs[n.chains.index])),
                    default.chains)
 
 # Determine whether or not to exclude rows with na's from input data
-if("no_na" %in% args){
+if("no_na" %in% cmdargs){
     DT.run <- na.omit(try.data)
     na <- "no_na"
 } else {
@@ -67,15 +67,15 @@ global.trait.means <- as.numeric(try.data[, lapply(.SD, mean, na.rm=TRUE),
 names(global.trait.means) <- traits
 
 # Determine which models to run from arguments
-model.args <- args[grep("uni|multi|hier", args)]
+model.args <- cmdargs[grep("uni|multi|hier", cmdargs)]
 model.args.list <- strsplit(model.args, "_")
 
 # Run models
 errors <- character()
 for (arg in model.args.list){
-    message(paste("Running model", arg))
+    model_desc <- sprintf("model %s, pft %s", arg[1], arg[2])
+    message(paste("Running", model_desc))
     model_type <- arg[1]
-    print(c("Model type", model_type))
     model <- switch(model_type,
                     uni = run.uni,
                     multi = run.multi, 
@@ -88,13 +88,12 @@ for (arg in model.args.list){
     }
     out <- model(DT)
     if(!all(is.error(out))){
-        save(out, file = sprintf("%s/%s.trait%s.Rdata", dir, model_type, na))
+        save(out, file = sprintf("%s/%s.trait%s.Rdata", out.dir, model_type, na))
     } else {
-        warning(sprintf("Error running %s", arg))
+        warning(paste("Error running", model_desc))
         errors <- c(errors, arg)
     }
 }
-warning(paste("Errors in the following models:", arg, collapse=" "))
 
 print("=================================")
 print("PRINT WARNINGS")

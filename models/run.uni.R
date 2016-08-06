@@ -13,7 +13,7 @@ run.uni <- function(DT){
 
     ## JAGS RUN ####################################################################
 
-    model = "models/univarite.trait.txt"
+    model = "models/uni.bug"
     print(Sys.time())
 
     data <- list(
