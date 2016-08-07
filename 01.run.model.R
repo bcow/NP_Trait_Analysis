@@ -72,9 +72,9 @@ model.args.list <- strsplit(model.args, "_")
 
 # Run models
 errors <- character()
-for (arg in model.args.list){
-    model_desc <- sprintf("model %s, pft %s", arg[1], arg[2])
-    message(paste("Running", model_desc))
+for (model_arg in model.args){
+    arg <- strsplit(model_arg, "_")[[1]]
+    message(paste("Running", model_arg))
     model_type <- arg[1]
     model <- switch(model_type,
                     uni = run.uni,
@@ -88,9 +88,9 @@ for (arg in model.args.list){
     }
     out <- model(DT)
     if(!all(is.error(out))){
-        save(out, file = sprintf("%s/%s.trait%s.Rdata", out.dir, model_type, na))
+        save(out, file = sprintf("%s/%s%s.Rdata", out.dir, model_arg, na))
     } else {
-        warning(paste("Error running", model_desc))
+        warning(paste("Error running", model_arg))
         errors <- c(errors, arg)
     }
 }

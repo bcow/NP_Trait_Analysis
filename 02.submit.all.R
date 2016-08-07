@@ -4,29 +4,22 @@ source("00.common.R")
 # Write qsub submission script
 ########################################
 
-out_fname <- "submit.all.qsub"
+out_fname <- "submit.all.sh"
 n.chains <- 5
 
 bash_header <- "#!/bin/bash"
-qsub_args <- c('#$ -l h_rt=48:00:00',
-               '#$ -N np_trait',
-               '#$ -V',
-               '#$ -j y',
-               sprintf('#$ -pe omp %d -q "geo*"', n.chains),
-               sprintf('#$ -v OMP_NUM_THREADS=%d', n.chains))
 
-qsub_pattern <- paste0("qsub 01.run.model.R %s n.chains=", n.chains)
+qsub_pattern <- "qsub -N %1$s -pe omp %2$d -v OMP_NUM_THREADS=%2$d run.rscript.sh 01.run.model.R %1$s n.chains=%2$d"
 
 pft_numbers <- 1:npft
 uni_models <- c("uni", sprintf("uni_%02d", pft_numbers))
 multi_models <- c("multi", sprintf("multi_%02d", pft_numbers))
 
-uni_string <- sprintf(qsub_pattern, uni_models)
-multi_string <- sprintf(qsub_pattern, multi_models)
-hier_string <- sprintf(qsub_pattern, "hier")
+uni_string <- sprintf(qsub_pattern, uni_models, n.chains)
+multi_string <- sprintf(qsub_pattern, multi_models, n.chains)
+hier_string <- sprintf(qsub_pattern, "hier", n.chains)
 
-out_file <- c(bash_header, qsub_args,
-              uni_string, multi_string, hier_string)
+out_file <- c(bash_header, uni_string, multi_string, hier_string)
 
 write(out_file, file = out_fname)
 

@@ -5,13 +5,23 @@
 *.Rproj
 *.rds
 *.Rapp.history
+
 # old work
 old*
+
+# Generated automatically
+submit.all.sh
+
+# Logfiles
+logs
+
 # private
 data/*
+
 # too big
 output*
 figures/*
+
 # misc files
 try.pft.workflow.R
 *wrkflw*
@@ -24,3 +34,4 @@ Icon*
 try.run.*
 *~
 *#*
+qstat.txt
