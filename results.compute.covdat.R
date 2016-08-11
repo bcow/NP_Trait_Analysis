@@ -41,6 +41,7 @@ summarizeSampleMatrix <- function(cov.all.samples, dims,
 }
 
 print("Loading covariance matrix...")
+cov.global <- readRDS(
 load("output/hier.trait.pft.na/hier.trait.pft.na.Rdata") # Object name is "out"
 # Get global covariance and correlation
 cov.global <- out$BUGSoutput$sims.list$Sigma_trait

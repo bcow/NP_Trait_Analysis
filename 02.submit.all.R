@@ -1,4 +1,4 @@
-source("00.common.R")
+library(mvtraits)
 
 ########################################
 # Write qsub submission script
@@ -19,7 +19,13 @@ uni_string <- sprintf(qsub_pattern, uni_models, n.chains)
 multi_string <- sprintf(qsub_pattern, multi_models, n.chains)
 hier_string <- sprintf(qsub_pattern, "hier", n.chains)
 
-out_file <- c(bash_header, uni_string, multi_string, hier_string)
+args <- commandArgs(trailingOnly = TRUE)
+if(length(args) == 0) args <- c("uni", "multi", "hier")
+
+out_file <- bash_header
+if("uni" %in% args) out_file <- c(out_file, uni_string)
+if("multi" %in% args) out_file <- c(out_file, multi_string)
+if("hier" %in% args) out_file <- c(out_file, hier_string)
 
 write(out_file, file = out_fname)
 

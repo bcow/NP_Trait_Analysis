@@ -1,6 +1,5 @@
-custom.jags <- function(model, data, inits, n.chains, 
-                        variable.names){
-    library(runjags)
+customJAGS <- function(model, data, inits, n.chains, 
+                       variable.names){
     message("Running model...")
     result <- autorun.jags(model = model,
                            monitor = variable.names,

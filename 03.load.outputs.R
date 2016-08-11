@@ -1,22 +1,3 @@
-# Functions to retrieve outputs from RData files
-get_sims <- function(filename, vars){
-    library(runjags)
-    library(dplyr)
-    load(filename)
-    matchvars <- paste(vars, collapse="|")
-    out_sims <- out$mcmc %>% as.matrix() %>% .[, grep(matchvars, colnames(.))]
-    remove(out)
-    return(out_sims)
-}
-
-get_sims_list <- function(filenames, vars){
-    l <- list()
-    for(f in seq_along(filenames)){
-        l[[f]] <- get_sims(filenames[f], vars)
-    }
-    return(l)
-}
-
 # Read in all analysis outputs and store
 output_dir <- "output.n1"
 
@@ -32,15 +13,15 @@ files.hier <- file.path(output_dir, "hier.Rdata")
 
 storage_dir <- "processed_output"
 dir.create(storage_dir)
-sims.uni_global <- get_sims(files.uni_global, vars.uni)
+sims.uni_global <- lapply(vars.uni, function(x) get_sims(files.uni_global, x))
 saveRDS(sims.uni_global, file = file.path(storage_dir, "sims.uni_global.rds"))
-sims.uni_pft <- get_sims_list(files.uni_pft, vars.uni)
+sims.uni_pft <- lapply(vars.uni, function(x) get_sims(files.uni_pft, x))
 saveRDS(sims.uni_pft, file = file.path(storage_dir, "sims.uni_pft.rds"))
-sims.multi_global <- get_sims(files.multi_global, vars.multi)
+sims.multi_global <- lapply(vars.multi, function(x) get_sims(files.multi_global, x))
 saveRDS(sims.multi_global, file = file.path(storage_dir, "sims.multi_global.rds"))
-sims.multi_pft <- get_sims_list(files.multi_pft, vars.multi)
+sims.multi_pft <- lapply(vars.multi, function(x) get_sims(files.multi_pft, x))
 saveRDS(sims.multi_pft, file = file.path(storage_dir, "sims.multi_pft.rds"))
-sims.hier <- get_sims(files.hier, vars.hier)
+sims.hier <- lapply(vars.hier, function(x) get_sims(files.hier, x))
 saveRDS(sims.hier, file = file.path(storage_dir, "sims.hier.rds"))
 
 

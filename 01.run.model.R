@@ -1,33 +1,8 @@
 ## LOAD DATA AND PACKAGES #############################################################
+library(mvtraits)
 
-library(mvtnorm)
-library(data.table)
-# library(shinystan)
-
-source("00.common.R")
-source("load.try.data.R")
-source("custom.jags.R")
-
-source("models/run.uni.R")
-source("models/run.multi.R")
-source("models/run.hier.R")
-
-# Defining Gamma & Wishart parameters here so we can experiment
-# See test.wishart.R for more.
-# dgamma(gamma.shape,gamma.rate)
-# dwish(Wishart.rate,Wishart.df)
-
-n_traits = 5
-n = 1
-Wishart.rate = diag(n, n_traits)
-Wishart.df = n_traits
-mean = n * Wishart.df
-gamma.shape = Wishart.df/2 
-gamma.rate = n/2   
-
-out.dir <- paste0("output.n",n)
-if(!dir.exists(out.dir)) dir.create(out.dir)
-
+try_data <- loadTRYData("data/try.data.rds")
+out_dir <- "output.n1"
 
 if(!exists("cmdargs")) cmdargs <- commandArgs(trailingOnly=TRUE)
 # Possible arguments: 
@@ -51,20 +26,11 @@ n.chains <- ifelse(length(n.chains.index > 0),
 
 # Determine whether or not to exclude rows with na's from input data
 if("no_na" %in% cmdargs){
-    DT.run <- na.omit(try.data)
+    try_data <- na.omit(try_data)
     na <- "no_na"
 } else {
-    DT.run <- try.data
     na <- ""
 }
-
-DT.run[,pft := as.numeric(pft)]
-pfts <- unique(DT.run[,pft])
-
-# Calculate global trait means for initial conditions
-global.trait.means <- as.numeric(try.data[, lapply(.SD, mean, na.rm=TRUE),
-                                 .SDcols = traits])
-names(global.trait.means) <- traits
 
 # Determine which models to run from arguments
 model.args <- cmdargs[grep("uni|multi|hier", cmdargs)]
@@ -76,19 +42,10 @@ for (model_arg in model.args){
     arg <- strsplit(model_arg, "_")[[1]]
     message(paste("Running", model_arg))
     model_type <- arg[1]
-    model <- switch(model_type,
-                    uni = run.uni,
-                    multi = run.multi, 
-                    hier = run.hier)
     pft_number <- as.numeric(arg[2])
-    if (!is.na(pft_number)){
-        DT <- DT.run[pft == pft_number]
-    } else {
-        DT <- DT.run
-    }
-    out <- model(DT)
+    out <- runModel(model_type, try_data, pft_number, n.chains)
     if(!all(is.error(out))){
-        save(out, file = sprintf("%s/%s%s.Rdata", out.dir, model_arg, na))
+        save(out, file = sprintf("%s/%s%s.Rdata", out_dir, model_arg, na))
     } else {
         warning(paste("Error running", model_arg))
         errors <- c(errors, arg)
