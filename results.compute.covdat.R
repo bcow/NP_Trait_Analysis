@@ -1,11 +1,4 @@
-source("00.common.R")
-
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(RColorBrewer)
-library(grid)
-library(gridExtra)
+library(mvtraits)
 
 getcov <- function(trait, cov.all) cov.all[, trait[1], trait[2]]
 
@@ -40,11 +33,9 @@ summarizeSampleMatrix <- function(cov.all.samples, dims,
     return(cov.dat)
 }
 
-print("Loading covariance matrix...")
-cov.global <- readRDS(
-load("output/hier.trait.pft.na/hier.trait.pft.na.Rdata") # Object name is "out"
+message("Loading covariance matrix...")
+cov.global <- readRDS("processed_output/sims.hier.rds")$Sigma_trait
 # Get global covariance and correlation
-cov.global <- out$BUGSoutput$sims.list$Sigma_trait
 cor.global <- array2DApply(cov.global, cov2cor)
 traits.nolog <- traits %>% gsub("log.", "", .)
 cor.mean <- apply(cor.global, 2:3, mean)
