@@ -35,3 +35,4 @@ write(out_file, file = out_fname)
 
 system(paste("chmod +x", out_fname))
 system(paste0("./", out_fname))
+file.remove(out_fname)

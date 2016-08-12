@@ -1,6 +1,3 @@
-library(MASS)
-library(car)
-
 dens2d <- function(x,y,...) {
     z <- kde2d(x, y)
     levs <- c(0.8)
