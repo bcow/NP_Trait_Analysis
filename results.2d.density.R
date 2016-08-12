@@ -1,41 +1,38 @@
 library(mvtraits)
 
-load.mu <- function(path){
-    all.out <- load.into.var(path)
-    mus <- all.out$BUGSoutput$sims.list$mu_trait
-    colnames(mus) <- traits
-    return(mus)
-}
-
 # Draw global plot
 
-message("Loading hierarchical output...")
-hier.all <- load.into.var("output/hier.trait.pft.na/hier.trait.pft.na.Rdata")
-hier.mus.global <- hier.all$BUGSoutput$sims.list$mu_trait
-hier.mus.pft <- hier.all$BUGSoutput$sims.list$mu_pft_trait
+message("Loading univariate global...")
+uni.all.global <- readRDS("processed_output/sims.uni_global.rds")
 
 message("Loading multivariate global...")
-multi.mus <- load.mu("output/multi.trait.na/multi.trait.na.Rdata")
+multi.all.global <- readRDS("processed_output/sims.multi_global.rds")
 
-message("Loading univariate global...")
-uni.mus <- load.mu("output/uni.trait.na/uni.trait.na.Rdata")
+message("Loading hierarchical output...")
+hier.all <- readRDS("processed_output/sims.hier.rds")
 
 # Get TRY data
-source("load.try.data.R")
-obs.means.global <- try.na[, lapply(.SD, mean, na.rm=TRUE), 
+try_data <- loadTRYData("data/try.data.rds")
+obs.means.global <- try_data[, lapply(.SD, mean, na.rm=TRUE), 
                            .SDcols = traits] %>% c() %>% unlist()
 
 message("Creating global figure...")
 mypng("figures/alexey_pairs/00.global.png")
-pairs.density(uni.mus, multi.mus, hier.mus.global, obs.means.global, main="Global")
+pairs.density(uni.all.global$mu_trait, 
+              multi.all.global$mu_trait, 
+              hier.all$mu_trait, 
+              obs.means.global, 
+              main="Global")
 dev.off()
 
 # Draw plots by PFT
+uni.all.pft <- readRDS("processed_output/sims.uni_pft.rds")
+multi.all.pft <- readRDS("processed_output/sims.multi_pft.rds")
 for(i in 1:npft){
     print(paste(i, pft.names[i]))
-    hier.mus <- hier.mus.pft[,i,]
-    multi.mus <- load.mu(sprintf("output/multi.trait.na/multi.trait.na.pft.%02d.Rdata", i))
-    uni.mus <- load.mu(sprintf("output/uni.trait.na/uni.trait.na.pft.%02d.Rdata", i))
+    uni.mus <- uni.all.pft$mu_trait[[i]]
+    multi.mus <- multi.all.pft$mu_trait[[i]]
+    hier.mus <- hier.all$mu_pft_trait[,i,]
     obs.means <- try.na[pft == pft.names[i], 
                         lapply(.SD, mean, na.rm=TRUE),
                         .SDcols = traits] %>% c() %>% unlist()
