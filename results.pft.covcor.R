@@ -1,21 +1,22 @@
-source("00.common.R")
-source("results.compute.covdat.R")
-
-library(dplyr)
-library(tidyr)
-library(ggplot2)
+library(mvtraits)
 library(RColorBrewer)
 library(grid)
 library(gridExtra)
-library(abind)
 
 ##### Facet Grid Correlation Plot ##########################
+
+cov.dat <- readRDS("processed_output/summary.hier.cov.rds")[PFT != "global"]
+cor.dat.all <- readRDS("processed_output/summary.hier.cor.rds")
+cor.global.dat <- cor.dat.all[PFT == "global"]
+cor.dat <- cor.dat.all[PFT != "global"]
+trait.pairs <- cov.dat[, unique(trait)]
+#cov.dat[, lapply(.SD, function(x) {x[is.na(x)] <- 0; return(x)})]
 
 cov.plt <- ggplot(cov.dat) + 
     aes(x=Function, y=q500, ymin=q025, ymax=q975, color=Function) +
     geom_pointrange() + 
     geom_hline(yintercept = 0) + 
-    facet_grid(Trait ~ Biome, scales="free") +
+    facet_grid(trait ~ Biome, scales="free") +
     theme(axis.text.x = element_blank(), 
           axis.ticks.x = element_blank(),
           legend.position = "bottom") +
@@ -35,29 +36,8 @@ mypng("figures/pft.cor.plot.png")
 plot(cov.plt %+% cor.dat + ylab("Correlation"))
 dev.off()
 
-##### Plot the ANOVA ##########################################
-
-Type.colors <- c(brewer.pal(5, "Spectral"), "grey")
-names(Type.colors) <- rnames
-  
-cor.anova.plot <- ggplot(cor.plot.dat) + 
-  aes(x = Trait, fill = Type) + 
-  geom_bar(stat="identity") + 
-  scale_fill_manual(values = Type.colors) 
-
-mypng("figures/pft.cor.anova.scaled.png")
-plot(cor.anova.plot + aes(y = scaledValue))
-dev.off()
-
-mypng("figures/pft.cor.anova.png")
-plot(cor.anova.plot + aes(y = Value))
-dev.off()
-
-print("All done!")
-
 ##### Stacked Correlation Plot ################################
 
-cor.dat.what<- filter(cor.dat.g, PFT != "global")
 
 # playing with different colors
 Biome.colors <- brewer.pal(length(unique(cor.dat$Biome))+1,"Set1")  
@@ -73,8 +53,8 @@ Function.colors <- brewer.pal(length(unique(cor.dat$Function)),"Accent")
 names(Function.colors) <- unique(cor.dat$Function)
 
 for(i in 1:length(trait.pairs)){
-  dat <- filter(cor.dat, Trait == trait.pairs[i])
-  global.mean <- filter(cor.global.dat, trait == trait.pairs[i])$Value
+  dat <- filter(cor.dat, trait == trait.pairs[i])
+  global.mean <- filter(cor.global.dat, trait == trait.pairs[i])$Mean
   biome.means <- as.data.frame(summarise(group_by(dat, Biome),
             mean=mean(Mean)))
   mean <- mean(dat$Mean)
