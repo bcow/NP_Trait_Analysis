@@ -1,4 +1,4 @@
-mvtraits := $(wildcard mvtraits/**/*)
+mvtraits := $(wildcard mvtraits/*) $(wildcard mvtraits/**/*)
 #npft := 35
 #pfts := $(shell {1..$(npft)})
 #uni := uni $(shell printf 'uni_%02d' $(pfts))
