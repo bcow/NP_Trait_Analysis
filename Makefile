@@ -19,7 +19,6 @@ install: .last.install
 .last.install: $(mvtraits)
 	Rscript -e "devtools::document('mvtraits')"
 	R CMD INSTALL mvtraits
-	Rscript -e "devtools::test('mvtraits')"
 	date > .last.install
 
 check: install
@@ -34,6 +33,9 @@ check: install
 ############################################################
 # Test one model
 ############################################################
+testthat: 
+	Rscript -e "devtools::test()"
+
 test: .last.test
 
 .last.test:
