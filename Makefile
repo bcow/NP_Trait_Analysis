@@ -34,9 +34,9 @@ check: install
 # Test one model
 ############################################################
 testthat: 
-	Rscript -e "devtools::test()"
+	Rscript -e "devtools::test('mvtraits')"
 
-test: .last.test
+test: .last.test .last.install
 
 .last.test:
 	Rscript 01.run.model.R uni_01
