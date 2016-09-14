@@ -20,9 +20,9 @@ pairs_path <- "figures/alexey_pairs"
 dir.create(pairs_path)
 message("Creating global figure...")
 mypng(file.path(pairs_path, "00.global.png"))
-pairs.density(uni.all.global$mu_trait, 
-              multi.all.global$mu_trait, 
-              hier.all$mu_trait, 
+pairs_density(uni.all.global$mu, 
+              multi.all.global$mu, 
+              hier.all$mu_global, 
               obs.means.global, 
               main="Global")
 dev.off()
@@ -41,7 +41,7 @@ for(i in 1:npft){
                           .SDcols = traits] %>% c() %>% unlist()
 
     mypng(file.path(pairs_path, sprintf("%02d.pft.png", i)))
-    pairs.density(uni.mus, multi.mus, hier.mus, 
+    pairs_density(uni.mus, multi.mus, hier.mus, 
                   obs.means, 
                   main=paste(i, pft.names[i]))
     dev.off()

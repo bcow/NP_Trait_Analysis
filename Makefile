@@ -36,9 +36,9 @@ check: install
 testthat: 
 	Rscript -e "devtools::test('mvtraits')"
 
-test: .last.test .last.install
+test: .last.test
 
-.last.test:
+.last.test: .last.install
 	Rscript 01.run.model.R uni_01
 	date > .last.test
 
