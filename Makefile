@@ -7,7 +7,7 @@ mvtraits := $(wildcard mvtraits/*) $(wildcard mvtraits/**/*)
 #outputdir := output.n1
 #uniFiles := 
 
-.PHONY: all install test figures
+.PHONY: all install test figures testthat 
 
 all: install test
 
