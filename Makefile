@@ -33,12 +33,12 @@ check: install
 ############################################################
 # Test one model
 ############################################################
-testthat: 
+testthat: install
 	Rscript -e "devtools::test('mvtraits')"
 
 test: .last.test
 
-.last.test: .last.install
+.last.test: install
 	Rscript 01.run.model.R uni_01
 	date > .last.test
 
