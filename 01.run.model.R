@@ -43,7 +43,7 @@ for (model_arg in model.args){
     message(paste("Running", model_arg))
     model_type <- arg[1]
     pft_number <- as.numeric(arg[2])
-    out <- runModel(model_type, try_data, pft_number, n.chains, iter = 20000)
+    out <- runModel(model_type, try_data, pft_number, n.chains, iter = 10000)
     if(!all(is.error(out))){
         save(out, file = sprintf("%s/%s%s.Rdata", out_dir, model_arg, na))
     } else {
