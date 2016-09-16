@@ -2,17 +2,7 @@ library(mvtraits)
 
 storage_dir <- "processed_output"
 dir.create(storage_dir, showWarnings = FALSE)
-
-# Get summaries for all output and save
-output_dir <- "output"
-all_files <- list.files(output_dir, ".Rdata", full.names=TRUE)
-datlist <- list()
-for (f in all_files) {
-    print(f)
-    datlist[[f]] <- summarizeStan(f)
-}
-summarydat <- rbindlist(datlist)
-saveRDS(summarydat, file = file.path(storage_dir, "summary.rds"))
+output_dir <- "output_selected"
 
 # Isolate samples of the mean
 vars.uni <- "mu" 
@@ -55,7 +45,6 @@ if (length(files.multi_global) > 0) {
 
 if (length(files.multi_pft) > 0) {
     message("Loading multivariate PFT results...")
-    load(files.multi_pft)
     sims.multi_pft <- lapply(vars.multi, function(x) get_sims_list(files.multi_pft, x))
     names(sims.multi_pft) <- vars.multi
     saveRDS(sims.multi_pft, file = file.path(storage_dir, "sims.multi_pft.rds"))
