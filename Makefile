@@ -62,7 +62,10 @@ run_hier: install
 ############################################################
 
 outputs: install
-	Rscript 03.load.outputs.R
+	Rscript 03.load.samples.R
+
+summary: install
+	Rscript 04.summarize.outputs.R
 
 ############################################################
 # Generate figures 
