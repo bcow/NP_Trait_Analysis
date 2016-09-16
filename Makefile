@@ -39,7 +39,7 @@ testthat: install
 test: .last.test
 
 .last.test: install
-	Rscript 01.run.model.R uni_01
+	Rscript 01.run.model.R multi
 	date > .last.test
 
 ############################################################
