@@ -33,9 +33,9 @@ multi.all.pft <- readRDS("processed_output/sims.multi_pft.rds")
 for(i in 1:npft){
     current_pft <- pft.names[i]
     print(paste(i, current_pft))
-    uni.mus <- uni.all.pft$mu_trait[[i]]
-    multi.mus <- multi.all.pft$mu_trait[[i]]
-    hier.mus <- getPFTFromHier(hier.all$mu_pft_trait, current_pft)
+    uni.mus <- uni.all.pft$mu[[i]]
+    multi.mus <- multi.all.pft$mu[[i]]
+    hier.mus <- hier.all$mu_pft[i,]
     obs.means <- try_data[pft == pft.names[i], 
                           lapply(.SD, mean, na.rm=TRUE),
                           .SDcols = traits] %>% c() %>% unlist()
