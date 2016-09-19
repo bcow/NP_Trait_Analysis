@@ -35,7 +35,7 @@ for(i in 1:npft){
     print(paste(i, current_pft))
     uni.mus <- uni.all.pft$mu[[i]]
     multi.mus <- multi.all.pft$mu[[i]]
-    hier.mus <- hier.all$mu_pft[i,]
+    hier.mus <- hier.all$mu_pft[,i,]
     obs.means <- try_data[pft == pft.names[i], 
                           lapply(.SD, mean, na.rm=TRUE),
                           .SDcols = traits] %>% c() %>% unlist()

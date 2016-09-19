@@ -8,7 +8,7 @@ library(gridExtra)
 h_summary <- readRDS("processed_output/summary.rds")[model_type == "hier"]
 cov.dat <- h_summary[var_type == "Sigma_pft"][PFT != "global"]
 cor.dat <- h_summary[var_type == "Omega_pft"][PFT != "global"]
-cor.global.dat <- h_summary[var_type == "Omega_pft"][PFT == "global"]
+cor.global.dat <- h_summary[var_type == "Omega_global"]
 trait.pairs <- cor.dat[, unique(trait)]
 #cov.dat[, lapply(.SD, function(x) {x[is.na(x)] <- 0; return(x)})]
 
@@ -55,13 +55,11 @@ names(Function.colors) <- unique(cor.dat$Function)
 for(i in 1:length(trait.pairs)){
   dat <- filter(cor.dat, trait == trait.pairs[i])
   global.mean <- filter(cor.global.dat, trait == trait.pairs[i])$Mean
-  biome.means <- as.data.frame(summarise(group_by(dat, Biome),
-            mean=mean(Mean)))
-  mean <- mean(dat$Mean)
 
-  p <- ggplot() + geom_vline(xintercept = global.mean, size=1.5, color="magenta") + 
-    scale_colour_manual(values=Biome.colors)+ 
+  p <- ggplot() + 
     geom_density(data=dat,aes(x=Mean, y=..density..,fill=Biome), position="stack") +
+    geom_vline(xintercept = global.mean, size=1.5, color="black", linetype = "dotdash") + 
+    scale_colour_manual(values=Biome.colors)+ 
     scale_fill_manual(values=Biome.colors) + labs(title = trait.pairs[i]) + 
     xlim(-1,1) + geom_vline(xintercept = 0, size=.5, linetype = "longdash") + 
     theme(legend.position = "none")
