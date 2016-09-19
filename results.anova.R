@@ -2,15 +2,16 @@ library(mvtraits)
 library(tibble)
 library(RColorBrewer)
 
-cor.dat <- readRDS("processed_output/summary.hier.cor.rds")
+all_summary <- readRDS("processed_output/summary.rds")
+cor.dat <- all_summary[model_type == "hier"][var_type == "Omega_pft"]
 
 trait.pairs <- unique(cor.dat[, trait])
 cor.list <- list()
 rnames <- c("Biome", "ps_type", "growth_form", 
             "leaf_type", "phenology", "Residuals")
-for(trait in trait.pairs){
-    cor.list[[trait]] <- lm(Mean ~ Biome + ps_type + growth_form + ps_type + leaf_type + phenology,
-                cor.dat, subset = trait == trait) %>% 
+for(trt in trait.pairs){
+    cor.list[[trt]] <- lm(Mean ~ Biome + ps_type + growth_form + ps_type + leaf_type + phenology,
+                cor.dat[trait == trt]) %>% 
                 anova %>% dplyr::select(matches("Sum Sq"))
 }
 

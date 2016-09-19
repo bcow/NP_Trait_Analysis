@@ -5,11 +5,11 @@ library(gridExtra)
 
 ##### Facet Grid Correlation Plot ##########################
 
-cov.dat <- readRDS("processed_output/summary.hier.cov.rds")[PFT != "global"]
-cor.dat.all <- readRDS("processed_output/summary.hier.cor.rds")
-cor.global.dat <- cor.dat.all[PFT == "global"]
-cor.dat <- cor.dat.all[PFT != "global"]
-trait.pairs <- cov.dat[, unique(trait)]
+h_summary <- readRDS("processed_output/summary.rds")[model_type == "hier"]
+cov.dat <- h_summary[var_type == "Sigma_pft"][PFT != "global"]
+cor.dat <- h_summary[var_type == "Omega_pft"][PFT != "global"]
+cor.global.dat <- h_summary[var_type == "Omega_pft"][PFT == "global"]
+trait.pairs <- cor.dat[, unique(trait)]
 #cov.dat[, lapply(.SD, function(x) {x[is.na(x)] <- 0; return(x)})]
 
 cov.plt <- ggplot(cov.dat) + 
@@ -67,12 +67,16 @@ for(i in 1:length(trait.pairs)){
     theme(legend.position = "none")
   assign(paste0("p",i), p)
 }
+
+png("/dev/null")
 r <- rectGrob(gp=gpar(fill="white"))
 p <- arrangeGrob(p1, r, r, r, p2, p5, r, r, p3, p6, p8,r, p4, p7, p9, p10)
 g <- ggplotGrob(p1 + theme(legend.position="right"))$grobs
+
 legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
 lheight <- sum(legend$height)
 lwidth <- sum(legend$width)
+dev.off()
 png(filename = sprintf("figures/stacked.cor.biome.png"), height = 800, width=1100)
 grid.newpage() 
 grid.draw(arrangeGrob(p,legend,ncol = 2, 

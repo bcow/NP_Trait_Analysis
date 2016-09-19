@@ -2,17 +2,17 @@ library(mvtraits)
 
 # Get the covariance matrices for each PFT
 outdir <- "figures/pft.corrs"
-cov.all <- readRDS("processed_output/sims.hier.rds")$Sigma_pft
+all_summary <- readRDS("processed_output/summary.rds")
+cov_all <- all_summary[model_type == "hier"][var_type == "Omega_pft"]
 dir.create(outdir, showWarnings = FALSE)
 
 for(i in 1:npft){
     pft_name <- pft.names[i]
     print(paste(i, pft_name))
-    cov.pft <- getPFTFromHier(cov.all, pft_name)
-    cor.pft <- covToCor.global(cov.pft) %>% colMeans %>% vecToMat
+    cor_pft <- tab2mat(cov_all[PFT == pft_name], corr = TRUE)
     png(sprintf("figures/pft.corrs/%02d.%s.png", 
                 i, gsub("/","-",pft_name)))
-    corrplot(cor.pft, method="ellipse", main=pft_name, mar = c(0,0,2,0))
+    corrplot(cor_pft, method="ellipse", main=pft_name, mar = c(0,0,2,0))
     dev.off()
 }
 
