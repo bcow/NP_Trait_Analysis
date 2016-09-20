@@ -1,23 +1,14 @@
-library(corrplot)
-library(R2jags)
+library(mvtraits)
 
-source("00.common.R")
-
-plot_covar <- function(fname, ...){
-    load(fname)                        # Object name is "out"
-    cov.global <- out$BUGSoutput$mean$Sigma_trait
-    rownames(cov.global) <- colnames(cov.global) <- traits
-    cor.global <- cov2cor(cov.global)
-    plt <- corrplot.mixed(cor.global, lower = "ellipse", upper = "number",
-                          mar=c(0,0,2,0), ...)
-    return(plt)
-}
+all_summary <- readRDS("processed_output/summary.rds")
 
 png("figures/cor.global.multi.png")
-plot_covar("output/multi.trait.na/multi.trait.na.Rdata", main="Multivariate")
+plot_covar(all_summary[model_type == "multi"][var_type == "Omega"][PFT == "global"], 
+           main="Multivariate")
 dev.off()
 
 png("figures/cor.global.hierarchical.png")
-plot_covar("output/hier.trait.pft.na/hier.trait.pft.na.Rdata", main="Hierarchical")
+plot_covar(all_summary[model_type == "hier"][var_type == "Omega_global"], 
+           main="Hierarchical")
 dev.off()
 

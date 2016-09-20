@@ -1,97 +1,48 @@
-source("00.common.R")
-library(magrittr)
-library(MASS)
-
-mypng <- function(path){
-    png(path, width=800, height = 800)
-}
-
-pairs.density <- function(uni.mus, multi.mus, hier.mus, obs.means, obs.global, nsamp=3000, ...){
-
-    dens2d <- function(x,y,...) {
-        z <- kde2d(x, y)
-        contour(z, nlevels = 2, add = TRUE, drawlabels = FALSE, ...)
-    }
-
-    dens2d.panel <- function(x, y){
-        dens2d(x[n1], y[n1], col=mod.colors[1])
-        dens2d(x[n2], y[n2], col=mod.colors[2])
-        dens2d(x[n3], y[n3], col=mod.colors[3])
-        if(!is.nan(x[nlast])) abline(v = x[nlast])
-        if(!is.nan(x[nlast])) abline(h = y[nlast])
-        abline(v = x[nlast2], lty="dashed", col="red")
-        abline(h = y[nlast2], lty="dashed", col="red")
-    }
-
-    n1 <- 1:nsamp
-    n2 <- n1 + 3000
-    n3 <- n2 + 3000
-    nlast <- nsamp*3 + 1
-    nlast2 <- nlast + 1
-    mod.colors <- c("uni" = "blue",
-                    "multi" = "green",
-                    "hier" = "red")
-    mus.list <- list(uni.mus[sample.int(nsamp),],
-                     multi.mus[sample.int(nsamp),],
-                     hier.mus[sample.int(nsamp),],
-                     obs.means, 
-                     obs.global)
-    plot.mus <- do.call(rbind, mus.list)
-
-    pairs(plot.mus, lower.panel = dens2d.panel, upper.panel=NULL, ...)
-}
-
-# Load outputs global outputs
-load.into.var <- function(path){
-    load(path)
-    result <- out
-    rm(out)
-    return(result)
-}
-
-load.mu <- function(path){
-    all.out <- load.into.var(path)
-    mus <- all.out$BUGSoutput$sims.list$mu_trait
-    colnames(mus) <- traits
-    return(mus)
-}
+library(mvtraits)
 
 # Draw global plot
 
-message("Loading hierarchical output...")
-hier.all <- load.into.var("output/hier.trait.pft.na/hier.trait.pft.na.Rdata")
-hier.mus.global <- hier.all$BUGSoutput$sims.list$mu_trait
-hier.mus.pft <- hier.all$BUGSoutput$sims.list$mu_pft_trait
+message("Loading univariate global...")
+uni.all.global <- readRDS("processed_output/sims.uni_global.rds")
 
 message("Loading multivariate global...")
-multi.mus <- load.mu("output/multi.trait.na/multi.trait.na.Rdata")
+multi.all.global <- readRDS("processed_output/sims.multi_global.rds")
 
-message("Loading univariate global...")
-uni.mus <- load.mu("output/uni.trait.na/uni.trait.na.Rdata")
+message("Loading hierarchical output...")
+hier.all <- readRDS("processed_output/sims.hier.rds")
 
 # Get TRY data
-source("load.try.data.R")
-obs.means.global <- try.na[, lapply(.SD, mean, na.rm=TRUE), 
+try_data <- loadTRYData("data/try.data.rds")
+obs.means.global <- try_data[, lapply(.SD, mean, na.rm=TRUE), 
                            .SDcols = traits] %>% c() %>% unlist()
 
+pairs_path <- "figures/alexey_pairs"
+dir.create(pairs_path)
 message("Creating global figure...")
-mypng("figures/alexey_pairs/00.global.png")
-pairs.density(uni.mus, multi.mus, hier.mus.global, obs.means.global, obs.means.global, main="Global")
+mypng(file.path(pairs_path, "00.global.png"))
+pairs_density(uni.all.global$mu, 
+              multi.all.global$mu, 
+              hier.all$mu_global, 
+              obs.means.global, 
+              main="Global")
 dev.off()
 
 # Draw plots by PFT
+uni.all.pft <- readRDS("processed_output/sims.uni_pft.rds")
+multi.all.pft <- readRDS("processed_output/sims.multi_pft.rds")
 for(i in 1:npft){
-    print(c(i, pft.names[i]))
-    hier.mus <- hier.mus.pft[,i,]
-    multi.mus <- load.mu(sprintf("output/multi.trait.na/multi.trait.na.pft.%02d.Rdata", i))
-    uni.mus <- load.mu(sprintf("output/uni.trait.na/uni.trait.na.pft.%02d.Rdata", i))
-    obs.means <- try.na[pft == pft.names[i], 
-                        lapply(.SD, mean, na.rm=TRUE),
-                        .SDcols = traits] %>% c() %>% unlist()
-    print(obs.means)
+    current_pft <- pft.names[i]
+    print(paste(i, current_pft))
+    uni.mus <- uni.all.pft$mu[[i]]
+    multi.mus <- multi.all.pft$mu[[i]]
+    hier.mus <- hier.all$mu_pft[,i,]
+    obs.means <- try_data[pft == pft.names[i], 
+                          lapply(.SD, mean, na.rm=TRUE),
+                          .SDcols = traits] %>% c() %>% unlist()
 
-    mypng(sprintf("figures/alexey_pairs/%02d.pft.png", i))
-    pairs.density(uni.mus, multi.mus, hier.mus, obs.means, obs.means.global,
+    mypng(file.path(pairs_path, sprintf("%02d.pft.png", i)))
+    pairs_density(uni.mus, multi.mus, hier.mus, 
+                  obs.means, 
                   main=paste(i, pft.names[i]))
     dev.off()
 }

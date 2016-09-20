@@ -3,15 +3,27 @@
 .RData
 .Ruserdata
 *.Rproj
-*.rds
 *.Rapp.history
+
 # old work
 old*
+*_old
+
+# Generated automatically
+submit.all.sh
+processed_output
+
+# Logfiles
+logs
+logs*
+
 # private
 data/*
+
 # too big
 output*
 figures/*
+
 # misc files
 try.pft.workflow.R
 *wrkflw*
@@ -24,3 +36,8 @@ Icon*
 try.run.*
 *~
 *#*
+qstat.txt
+.last.*
+
+backup_samples/
+mvtraits/tests/testthat/*.rds
